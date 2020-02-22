@@ -13,6 +13,8 @@ set(
         ${SRC}/p.h
         ${SRC}/test_functions.cpp
         ${SRC}/test_functions.h
+        ${SRC}/check.cpp
+        ${SRC}/check.h
 )
 
 set(
@@ -22,7 +24,7 @@ set(
         ${TRIC}/ltricubic_utils.h
         ${TRIC}/tricubic.h
         ${TRIC}/tricubic_utils.cpp
-)
+        )
 
 add_executable(tric_analysis ${SOURCE} ${TRICUBIC})
 include_directories(./tricubic)

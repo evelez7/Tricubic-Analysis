@@ -1,4 +1,3 @@
-#include <iostream>
 #include <random>
 #include "check.h"
 
@@ -7,6 +6,7 @@ void graph_results();
 
 int main() {
     auto test_points = generate_test_points(100);
+    execute_tests(test_points);
 }
 /**
  * Random number generator used to test function approximation.

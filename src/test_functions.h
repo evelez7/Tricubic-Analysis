@@ -5,9 +5,7 @@
 #include <set>
 #include <tuple>
 
-void execute_tests(std::set<std::tuple<double, double, double>> const*);
-double* example_1(std::set<std::tuple<double, double, double>> const*);
-double* example_2(std::set<std::tuple<double, double, double>> const*);
-void fill_array(double[64], double*, std::set<std::tuple<double, double, double>> const*);
+double* test_function_1(std::set<std::tuple<double, double, double>> const*);
+double* test_function_2(std::set<std::tuple<double, double, double>> const*);
 
 #endif //TRIC_EXAMPLE_TEST_FUNCTIONS_H
