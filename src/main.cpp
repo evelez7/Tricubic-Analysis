@@ -4,12 +4,13 @@
 #include <Python.h>
 
 std::set<std::tuple<double, double, double>>* generate_test_points(int);
-void graph_results();
+void graph();
 
 int main() {
     auto* test_points = generate_test_points(100);
 
     execute_tests(test_points);
+    graph();
 }
 
 /**
@@ -38,3 +39,17 @@ std::set<std::tuple<double, double, double>>* generate_test_points(int num_of_po
     return test_points;
 }
 
+void graph() {
+    Py_Initialize(); // initialize Python interpreter
+    char* function_name = "graph";
+
+    auto* module_name = PyBytes_FromString("graph");
+    auto* module = PyImport_Import(module_name);
+    auto* module_dict = PyModule_GetDict(module);
+    auto* function = PyDict_GetItemString(module_dict, function_name);
+    PyObject_CallObject(function, NULL);
+    Py_DecRef(module_name);
+    Py_DecRef(module);
+
+    Py_Finalize();
+}
