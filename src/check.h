@@ -2,9 +2,8 @@
 #define TRIC_ANALYSIS_CHECK_H
 #include <memory>
 #include <set>
+#include <tuple>
 
-std::unique_ptr<double[]> execute_tests(std::unique_ptr<std::set<std::tuple<double, double, double>>> const&);
-std::unique_ptr<double[]> test_1(std::unique_ptr<std::set<std::tuple<double, double, double>>> const&);
-double check_error();
+std::unique_ptr<double[]> execute_test(int const&, std::unique_ptr<std::set<std::tuple<double, double, double>>> const&);
 
 #endif //TRIC_ANALYSIS_CHECK_H

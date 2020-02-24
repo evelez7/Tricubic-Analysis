@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 project(tric_analysis)
 
-
 set(CMAKE_CXX_STANDARD 14)
 set(SRC ./src)
 set(TRIC ./tricubic)
@@ -10,7 +9,7 @@ find_package(PythonLibs REQUIRED)
 set(
         SOURCE
         ${SRC}/main.cpp
-        ${SRC}/p.h
+        ${SRC}/corners.h
         ${SRC}/test_functions.cpp
         ${SRC}/test_functions.h
         ${SRC}/check.cpp

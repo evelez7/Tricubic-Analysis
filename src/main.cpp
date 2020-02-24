@@ -5,8 +5,12 @@ std::unique_ptr<std::set<std::tuple<double, double, double>>> generate_test_poin
 void graph_results();
 
 int main() {
-    auto test_points = generate_test_points(100);
-    execute_tests(test_points);
+    std::unique_ptr<std::set<std::tuple<double, double, double>>> test_points = generate_test_points(100);
+
+    int num_of_tests = 2;
+    for (int i = 0; i < num_of_tests; i++) {
+        auto error = execute_test(1, test_points);
+    }
 }
 /**
  * Random number generator used to test function approximation.
