@@ -5,6 +5,7 @@
 #include <set>
 #include <tuple>
 
+int get_num_of_tests();
 double function_1(double, double, double);
 double function_2(double, double, double);
 std::unique_ptr<double[]> test_function_1(std::unique_ptr<std::set<std::tuple<double, double, double>>> const&);

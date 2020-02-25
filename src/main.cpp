@@ -7,10 +7,7 @@ void graph_results();
 int main() {
     std::unique_ptr<std::set<std::tuple<double, double, double>>> test_points = generate_test_points(100);
 
-    int num_of_tests = 2;
-    for (int i = 0; i < num_of_tests; i++) {
-        auto error = execute_test(1, test_points);
-    }
+    run_tests(test_points);
 }
 /**
  * Random number generator used to test function approximation.

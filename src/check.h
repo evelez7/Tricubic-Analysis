@@ -4,6 +4,6 @@
 #include <set>
 #include <tuple>
 
-std::unique_ptr<double[]> execute_test(int const&, std::unique_ptr<std::set<std::tuple<double, double, double>>> const&);
+void run_tests(std::unique_ptr<std::set<std::tuple<double, double, double>>> const&);
 
 #endif //TRIC_ANALYSIS_CHECK_H
