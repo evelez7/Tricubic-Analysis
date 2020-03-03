@@ -35,10 +35,18 @@ void execute_test(int const& id, std::shared_ptr<std::set<std::tuple<double, dou
             std::cout << "error: " << error << std::endl;
             break;
         }
+        case 2: {
+            auto error = check_error(errors, test_points, function_3, test_function_3);
+            std::cout << "Checking function for " << "1/(x^2 + y^2 + z^2)^1/2" << std::endl;
+            std::cout << "error: " << error << std::endl;
+            break;
+        }
         default: {
             break;
         }
     }
+
+    std::cout << std::endl;
 }
 
 // TODO: Name of function misleading, probably should pass approximate and exact
@@ -63,7 +71,7 @@ double error(std::shared_ptr<std::vector<double>> approximate_vector, std::share
     auto difference_vector = std::make_shared<std::vector<double>>();
 
     if (approximate_vector->size() != exact_vector->size()) {
-        throw "What the fuck";
+        throw "Vectors not of equal size";
     }
 
     for (int i = 0; i < approximate_vector->size(); i++) {
