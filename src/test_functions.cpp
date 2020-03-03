@@ -1,10 +1,9 @@
 #include <iostream>
 #include "test_functions.h"
 #include "corners.h"
-
 #define SET_LIMIT 8
 
-void fill_array(double*, std::unique_ptr<double[]>&, std::unique_ptr<std::set<std::tuple<double, double, double>>> const&);
+std::shared_ptr<std::vector<double>> fill_array(double*, std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
 
 /**
  * f(x,y,z) = x^2 + y^2 + z^2
@@ -36,7 +35,7 @@ double function_2(double x, double y, double z) {
  * @param test_points 
  * @return unique_ptr<double[]> an array of approximations of the same size as test_points
  */
-std::unique_ptr<double[]> test_function_1(std::unique_ptr<std::set<std::tuple<double, double, double>>> const& test_points) {
+std::shared_ptr<std::vector<double>> test_function_1(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points) {
     double f[8] = {0, 1, 1, 2, 1, 2, 2, 3};
     double df_dx[8] = {0, 2, 0, 2, 0, 2, 0, 2};
     double df_dy[8] = {0, 0, 2, 2, 0, 0, 2, 2};
@@ -47,21 +46,16 @@ std::unique_ptr<double[]> test_function_1(std::unique_ptr<std::set<std::tuple<do
     double d3f_dxdydz[8] = {0, 0, 0, 0, 0, 0, 0};
 
     double alpha[64];
-    std::unique_ptr<double[]> approximations(new double[test_points->size()]);
 
     tricubic_get_coeff(alpha, f, df_dx, df_dy, df_dz, d2f_dxdy, d2f_dxdz, d2f_dydz, d3f_dxdydz);
 
-    fill_array(alpha, approximations, test_points);
-    for (int i = 0; i < 100; i++) {
-        std::cout << "hello " << approximations[i] << std::endl;
-    }
-    return approximations;
+    return fill_array(alpha, test_points);
 }
 
 /**
  * f(x,y,z)=sin(x+y+z)
  */
-std::unique_ptr<double[]> test_function_2(std::unique_ptr<std::set<std::tuple<double, double, double>>> const& test_coords) {
+std::shared_ptr<std::vector<double>> test_function_2(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_coords) {
     double f[8];
     double df_dx[8];
     double df_dy[8];
@@ -96,11 +90,8 @@ std::unique_ptr<double[]> test_function_2(std::unique_ptr<std::set<std::tuple<do
     }
 
     tricubic_get_coeff(alpha, f, df_dx, df_dy, df_dz, d2f_dxdy, d2f_dxdz, d2f_dydz,d3f_dxdydz);
-    std::unique_ptr<double[]> approximations(new double[test_coords->size()]);
 
-    fill_array(alpha, approximations, test_coords);
-
-    return approximations;
+    return fill_array(alpha, test_coords);
 }
 
 /**
@@ -109,18 +100,19 @@ std::unique_ptr<double[]> test_function_2(std::unique_ptr<std::set<std::tuple<do
  * @param approximations
  * @param test_coords
  */
-void fill_array(double* alpha, std::unique_ptr<double[]>& approximations, std::unique_ptr<std::set<std::tuple<double, double, double>>> const& test_points) {
-    int i = 0;
+std::shared_ptr<std::vector<double>> fill_array(double* alpha, std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points) {
+    auto approximations_ptr = std::make_shared<std::vector<double>>();
+    approximations_ptr->reserve(test_points->size());
 
-    std::cout << "Begin fill array" << std::endl;
     for (auto coord : *test_points) {
         double x = std::get<0>(coord);
         double y = std::get<1>(coord);
         double z = std::get<2>(coord);
 
-        approximations[i] = tricubic_eval(alpha, x, y, z);
-        std::cout << approximations[i] << std::endl;
+        approximations_ptr->push_back(tricubic_eval(alpha, x, y, z));
     }
+
+    return approximations_ptr;
 }
 
 int get_num_of_tests() {

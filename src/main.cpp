@@ -1,11 +1,11 @@
 #include <random>
 #include "check.h"
 
-std::unique_ptr<std::set<std::tuple<double, double, double>>> generate_test_points(int);
+std::shared_ptr<std::set<std::tuple<double, double, double>>> generate_test_points(int);
 void graph_results();
 
 int main() {
-    std::unique_ptr<std::set<std::tuple<double, double, double>>> test_points = generate_test_points(100);
+    auto test_points = generate_test_points(100);
 
     run_tests(test_points);
 }
@@ -15,13 +15,13 @@ int main() {
  * @param num_of_points the number of random points to generate
  * @return set<double> a set of triples representing (x,y,z) coordinates
  */
-std::unique_ptr<std::set<std::tuple<double, double, double>>> generate_test_points(int num_of_points) {
+std::shared_ptr<std::set<std::tuple<double, double, double>>> generate_test_points(int num_of_points) {
     std::uniform_real_distribution<double> interval(0, 1); // P(i|a,b) = 1/(b-a)
     std::random_device seed; // used to ensure randomness
     std::mt19937 rng(seed()); // Mersenne Twister random number generator
 
     // Even if the rng repeats numbers, a set should guarantee uniqueness
-    std::unique_ptr<std::set<std::tuple<double, double, double>>> test_points(new std::set<std::tuple<double, double, double>>());
+    std::shared_ptr<std::set<std::tuple<double, double, double>>> test_points(new std::set<std::tuple<double, double, double>>());
 
     for (int i = 0; i < num_of_points; i++) {
         double x = interval(rng);
