@@ -1,73 +1,108 @@
 #include "check.h"
 #include "test_functions.h"
 #include <iostream>
+#include <random>
+#include <memory>
+#include <set>
+#include <tuple>
 
-double check_error(std::shared_ptr<std::vector<double>>&, std::shared_ptr<std::set<std::tuple<double, double, double>>> const&, double (*test)(double, double, double), std::shared_ptr<std::vector<double>> (*interpolator)(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&));
+// Define num of points to test here
+#define POINT_LIMIT 1000000
+
+// BEGIN forward declarations
+void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
+double check_error(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&, double (*test)(double, double, double), std::shared_ptr<std::vector<double>> (*interpolator)(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&));
+double error_calculation(std::shared_ptr<std::vector<double>> const&, std::shared_ptr<std::vector<double>> const&);
 void execute_test(int const&, std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
-double error(double, double);
-double error(std::shared_ptr<std::vector<double>>, std::shared_ptr<std::vector<double>>);
-double calculate_mean(std::shared_ptr<std::vector<double>> const&);
-std::shared_ptr<std::vector<double>> generate_exact_vector(std::shared_ptr<std::set<std::tuple<double,double,double>>> test_points, double (*test_function) (double, double, double));
+std::shared_ptr<std::vector<double>> generate_expected(std::shared_ptr<std::set<std::tuple<double,double,double>>> test_points, double (*test_function) (double, double, double));
+std::shared_ptr<std::set<std::tuple<double, double, double>>> generate_test();
+double norm(std::shared_ptr<std::vector<double>> const&);
+// END forward declarations
 
+/**
+ * The main function of this file which orchestrates the data flow of test po
+ */
+void check() {
+    auto test_points = generate_test();
+    run_tests(test_points);
+}
+
+/**
+ * Calls execute_test n number of times, n being the number of tests present
+ *
+ * @param test_points the set of unique triples to be tested for accuracy
+ */
 void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points) {
     auto num_of_tests = get_num_of_tests();
 
-    auto error_array_length = test_points->size();
     for (int i = 0; i < num_of_tests; i++) {
-
         execute_test(i, test_points);
     }
 }
+
+/**
+ * Execute a specific test whose "ID" is given by run_tests.
+ * run_tests calls this function n number of times, n being the number of functions present in the test suite.
+ *
+ * @param id the test number to be executed
+ * @param test_points the set of unqiue triples to be tested and passes to the error checking function
+ */
 void execute_test(int const& id, std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points) {
-    auto errors = std::make_shared<std::vector<double>>();
-    errors->reserve(test_points->size());
+    auto error_value = 0.0;
 
     switch(id) {
         case 0: {
-            auto error = check_error(errors, test_points, function_1, test_function_1);
+            error_value = check_error(test_points, function_1, test_function_1);
             std::cout << "Checking function for " << "sphere" << std::endl;
-            std::cout << "error: " << error << std::endl;
             break;
         }
         case 1: {
-            auto error = check_error(errors, test_points, function_2, test_function_2);
+            error_value = check_error(test_points, function_2, test_function_2);
             std::cout << "Checking function for " << "sin" << std::endl;
-            std::cout << "error: " << error << std::endl;
             break;
         }
         case 2: {
-            auto error = check_error(errors, test_points, function_3, test_function_3);
+            error_value = check_error(test_points, function_3, test_function_3);
             std::cout << "Checking function for " << "1/(x^2 + y^2 + z^2)^1/2" << std::endl;
-            std::cout << "error: " << error << std::endl;
+            break;
+        }
+        case 3: {
+            error_value = check_error(test_points, function_4, test_function_4);
+            std::cout << "Checking function " << "x^2 * y^2 * z^2" << std::endl;
             break;
         }
         default: {
             break;
         }
     }
-
+    std::cout << "error: " << error_value << std::endl;
     std::cout << std::endl;
 }
 
-// TODO: Name of function misleading, probably should pass approximate and exact
-// TODO: exact should be called expected
-double check_error(std::shared_ptr<std::vector<double>>& error_vector, std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points, double (*test)(double, double, double), std::shared_ptr<std::vector<double>> (*interpolator)(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&)) {
+/**
+ * This function generates the approximate and expected vectors from the interpolated and exact functions.
+ * It calls error_calculation to execute the formula between the approximate and expected vectors.
+ *
+ * @param test_points vector of points to be used
+ * @param test pointer to the exact function
+ * @param interpolator pointer to the function that interpolates the exact function
+ * @return a double value representing the error between the expected and approximate vectors (calls error_calculation)
+ */
+double check_error(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points, double (*test)(double, double, double), std::shared_ptr<std::vector<double>> (*interpolator)(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&)) {
     auto approximates = interpolator(test_points);
-    auto exact = generate_exact_vector(test_points, test);
+    auto exact = generate_expected(test_points, test);
 
-    return error(approximates, exact);
+    return error_calculation(approximates, exact);
 }
 
-double norm(std::shared_ptr<std::vector<double>> to_norm) {
-    double sum = 0;
-    for (auto value : *to_norm) {
-        sum += pow(value, 2);
-    }
-
-    return sqrt(sum);
-}
-
-double error(std::shared_ptr<std::vector<double>> approximate_vector, std::shared_ptr<std::vector<double>> exact_vector) {
+/**
+ * Performs the math to calculate the error (sqrt((norm(expected - approximate)^2)/(approximate_norm)^2))
+ *
+ * @param approximate_vector vector of the values approximated at the ith test point
+ * @param exact_vector vector of the exact value of the ith test point
+ * @return the error double
+ */
+double error_calculation(std::shared_ptr<std::vector<double>> const& approximate_vector, std::shared_ptr<std::vector<double>> const& exact_vector) {
     auto difference_vector = std::make_shared<std::vector<double>>();
 
     if (approximate_vector->size() != exact_vector->size()) {
@@ -90,32 +125,62 @@ double error(std::shared_ptr<std::vector<double>> approximate_vector, std::share
     return final;
 }
 
-
-std::shared_ptr<std::vector<double>> generate_exact_vector(std::shared_ptr<std::set<std::tuple<double,double,double>>> test_points, double (*test_function) (double, double, double)) {
-//    auto exact_vector = std::make_shared<std::set<std::tuple<double,double,double>>>();
+/**
+ *  Using the exact function, create the vector holding all exact values with respect to the test points
+ *
+ * @param test_points a set of triples, each one a test point in a given interval
+ * @param test_function the exact function (which is interpolated else where)
+ * @return vector holding the exact values for the exact function at a given triple of test_points
+ */
+std::shared_ptr<std::vector<double>> generate_expected(std::shared_ptr<std::set<std::tuple<double,double,double>>> test_points, double (*test_function) (double, double, double)) {
     auto exact_vector = std::make_shared<std::vector<double>>();
     for (auto point : *test_points) {
         auto x = std::get<0>(point);
         auto y = std::get<1>(point);
         auto z = std::get<2>(point);
 
-//        auto new_coordinate = std::make_tuple(x, y, z);
         exact_vector->push_back(test_function(x,y,z));
     }
     return exact_vector;
 }
 
-double calculate_mean(std::shared_ptr<std::vector<double>> const& error_array_ptr) {
-    double total = 0.0;
-    auto length = error_array_ptr->size();
+/**
+ * Random number generator used to test function approximation.
+ *
+ * @param num_of_points the number of random points to generate
+ * @return set<double> a set of triples representing (x,y,z) coordinates
+ */
+std::shared_ptr<std::set<std::tuple<double, double, double>>> generate_test() {
+    std::uniform_real_distribution<double> interval(0, 1); // P(i|a,b) = 1/(b-a)
+    std::random_device seed; // used to ensure randomness
+    std::mt19937 rng(seed()); // Mersenne Twister random number generator
 
-    for (int i = 0; i < length; i++) {
-        try {
-            error_array_ptr->at(i) += total;
-        } catch (const std::out_of_range& e) {
-            std::cout << "Exception thrown in calculate_mean" << std::endl;
-        }
+    // Even if the rng repeats numbers, a set should guarantee uniqueness
+    std::shared_ptr<std::set<std::tuple<double, double, double>>> test_points(new std::set<std::tuple<double, double, double>>());
+
+    while (test_points->size() < POINT_LIMIT) {
+        double x = interval(rng);
+        double y = interval(rng);
+        double z = interval(rng);
+
+        auto new_coordinate = std::make_tuple(x, y, z);
+        test_points->insert(new_coordinate);
     }
 
-    return (total/length);
+    return test_points;
+}
+
+/**
+ * Calculate the norm of a vector
+ *
+ * @param to_norm the vector whose norm is to be calculated
+ * @return double representing the norm
+ */
+double norm(std::shared_ptr<std::vector<double>> const& to_norm) {
+    double sum = 0;
+    for (auto value : *to_norm) {
+        sum += pow(value, 2);
+    }
+
+    return sqrt(sum);
 }
