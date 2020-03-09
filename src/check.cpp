@@ -1,13 +1,6 @@
-#include "check.h"
+#include "util.h"
 #include "test_functions.h"
 #include <iostream>
-#include <random>
-#include <memory>
-#include <set>
-#include <tuple>
-
-// Define num of points to test here
-#define POINT_LIMIT 1000000
 
 // BEGIN forward declarations
 void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
@@ -15,17 +8,8 @@ double check_error(std::shared_ptr<std::set<std::tuple<double, double, double>>>
 double error_calculation(std::shared_ptr<std::vector<double>> const&, std::shared_ptr<std::vector<double>> const&);
 void execute_test(int const&, std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
 std::shared_ptr<std::vector<double>> generate_expected(std::shared_ptr<std::set<std::tuple<double,double,double>>> test_points, double (*test_function) (double, double, double));
-std::shared_ptr<std::set<std::tuple<double, double, double>>> generate_test();
 double norm(std::shared_ptr<std::vector<double>> const&);
 // END forward declarations
-
-/**
- * The main function of this file which orchestrates the data flow of test po
- */
-void check() {
-    auto test_points = generate_test();
-    run_tests(test_points);
-}
 
 /**
  * Calls execute_test n number of times, n being the number of tests present
@@ -52,23 +36,24 @@ void execute_test(int const& id, std::shared_ptr<std::set<std::tuple<double, dou
 
     switch(id) {
         case 0: {
-            error_value = check_error(test_points, function_1, test_function_1);
             std::cout << "Checking function for " << "sphere" << std::endl;
+            error_value = check_error(test_points, function_1, test_function_1);
             break;
         }
         case 1: {
+            std::cout << "Checking function for " << "sin(x + y + z)" << std::endl;
             error_value = check_error(test_points, function_2, test_function_2);
-            std::cout << "Checking function for " << "sin" << std::endl;
+
             break;
         }
         case 2: {
-            error_value = check_error(test_points, function_3, test_function_3);
             std::cout << "Checking function for " << "1/(x^2 + y^2 + z^2)^1/2" << std::endl;
+            error_value = check_error(test_points, function_3, test_function_3);
             break;
         }
         case 3: {
-            error_value = check_error(test_points, function_4, test_function_4);
             std::cout << "Checking function " << "x^2 * y^2 * z^2" << std::endl;
+            error_value = check_error(test_points, function_4, test_function_4);
             break;
         }
         default: {
@@ -144,43 +129,3 @@ std::shared_ptr<std::vector<double>> generate_expected(std::shared_ptr<std::set<
     return exact_vector;
 }
 
-/**
- * Random number generator used to test function approximation.
- *
- * @param num_of_points the number of random points to generate
- * @return set<double> a set of triples representing (x,y,z) coordinates
- */
-std::shared_ptr<std::set<std::tuple<double, double, double>>> generate_test() {
-    std::uniform_real_distribution<double> interval(0, 1); // P(i|a,b) = 1/(b-a)
-    std::random_device seed; // used to ensure randomness
-    std::mt19937 rng(seed()); // Mersenne Twister random number generator
-
-    // Even if the rng repeats numbers, a set should guarantee uniqueness
-    std::shared_ptr<std::set<std::tuple<double, double, double>>> test_points(new std::set<std::tuple<double, double, double>>());
-
-    while (test_points->size() < POINT_LIMIT) {
-        double x = interval(rng);
-        double y = interval(rng);
-        double z = interval(rng);
-
-        auto new_coordinate = std::make_tuple(x, y, z);
-        test_points->insert(new_coordinate);
-    }
-
-    return test_points;
-}
-
-/**
- * Calculate the norm of a vector
- *
- * @param to_norm the vector whose norm is to be calculated
- * @return double representing the norm
- */
-double norm(std::shared_ptr<std::vector<double>> const& to_norm) {
-    double sum = 0;
-    for (auto value : *to_norm) {
-        sum += pow(value, 2);
-    }
-
-    return sqrt(sum);
-}

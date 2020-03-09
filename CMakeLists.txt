@@ -14,7 +14,8 @@ set(
         ${SRC}/test_functions.h
         ${SRC}/check.cpp
         ${SRC}/check.h
-)
+        ${SRC}/util.cpp
+        ${SRC}/util.h)
 
 set(
         TRICUBIC
