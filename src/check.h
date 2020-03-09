@@ -5,6 +5,7 @@
 #include <set>
 #include <tuple>
 
-void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
+void execute_all_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
+void execute_single_test(int const&, std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
 
 #endif //TRIC_ANALYSIS_CHECK_H

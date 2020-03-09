@@ -1,12 +1,11 @@
 #include "util.h"
+#include "check.h"
 #include "test_functions.h"
 #include <iostream>
 
 // BEGIN forward declarations
-void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
 double check_error(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&, double (*test)(double, double, double), std::shared_ptr<std::vector<double>> (*interpolator)(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&));
 double error_calculation(std::shared_ptr<std::vector<double>> const&, std::shared_ptr<std::vector<double>> const&);
-void execute_test(int const&, std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
 std::shared_ptr<std::vector<double>> generate_expected(std::shared_ptr<std::set<std::tuple<double,double,double>>> test_points, double (*test_function) (double, double, double));
 double norm(std::shared_ptr<std::vector<double>> const&);
 // END forward declarations
@@ -16,11 +15,11 @@ double norm(std::shared_ptr<std::vector<double>> const&);
  *
  * @param test_points the set of unique triples to be tested for accuracy
  */
-void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points) {
+void execute_all_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points) {
     auto num_of_tests = get_num_of_tests();
 
     for (int i = 0; i < num_of_tests; i++) {
-        execute_test(i, test_points);
+        execute_single_test(i, test_points);
     }
 }
 
@@ -31,7 +30,7 @@ void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> con
  * @param id the test number to be executed
  * @param test_points the set of unqiue triples to be tested and passes to the error checking function
  */
-void execute_test(int const& id, std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points) {
+void execute_single_test(int const& id, std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points) {
     auto error_value = 0.0;
 
     switch(id) {

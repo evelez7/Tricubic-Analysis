@@ -5,25 +5,56 @@
 #define SHIFT_LIMIT 10
 
 void print_border();
-void print_shift_notice(double);
+void print_shift_notice();
+void print_interval_notice(double);
+void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
+void run_tests(int const& id, std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
+
 double original_a = 0;
 double original_b = 1;
 
-int main() {
+int main(int argc, char** argv) {
     std::cout << "Generating " << get_num_of_test_points() << " test points" << std::endl;
     auto test_points = generate_test();
 
-    print_border();
-    std::cout << "testing on unit cube on interval [0,1]" << std::endl << std::endl;
-    run_tests(test_points);
+    if (argc < 2) {
+        run_tests(test_points);
+    } else {
+        auto id = atoi(argv[1]);
 
-    for (int i = 1; i < SHIFT_LIMIT; i++) {
-        print_border();
-        print_shift_notice(i);
-        auto shifted_points = shift_test_points(test_points, i);
-
-        run_tests(shifted_points);
+        run_tests(id, test_points);
     }
+}
+
+void run_tests(int const& id, std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points) {
+    for (int i = 0; i < SHIFT_LIMIT; i++) {
+        print_border();
+
+        print_interval_notice(i);
+        if (i == 0) {
+            execute_single_test(id, test_points);
+            continue;
+        }
+
+        print_shift_notice();
+        auto shifted_points = shift_test_points(test_points, i);
+        execute_single_test(id, shifted_points);
+    }
+}
+
+void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points) {
+   for (int i = 0; i < SHIFT_LIMIT; i++) {
+        print_border();
+       print_interval_notice(i);
+       if (i == 0) {
+           execute_all_tests(test_points);
+           continue;
+       }
+
+       print_shift_notice();
+       auto shifted_points = shift_test_points(test_points, i);
+       execute_all_tests(shifted_points);
+   }
 }
 
 void print_border() {
@@ -34,8 +65,10 @@ void print_border() {
     std::cout << std::endl << std::endl;
 }
 
+void print_shift_notice() {
+    std::cout << "Shifting points to conform with new interval" << std::endl << std::endl;
+}
 
-
-void print_shift_notice(double new_base) {
-    std::cout << "Shifting points to conform with unit cube on interval [" << original_a + new_base << "," << original_b + new_base << "]" << std::endl;
+void print_interval_notice(double new_base) {
+    std::cout << "Testing on unit cube with interval [" << original_a + new_base << "," << original_b + new_base << "]" << std::endl << std::endl;
 }
