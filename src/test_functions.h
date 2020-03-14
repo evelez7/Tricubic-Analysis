@@ -5,15 +5,13 @@
 #include <set>
 #include <tuple>
 #include <vector>
+#include <string>
+
+typedef std::shared_ptr<std::vector<double>>(*interpolator)(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
+typedef double(*control_function)(double, double, double);
 
 int get_num_of_tests();
-double function_1(double, double, double);
-double function_2(double, double, double);
-double function_3(double, double, double);
-double function_4(double, double, double);
-std::shared_ptr<std::vector<double>> test_function_1(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
-std::shared_ptr<std::vector<double>> test_function_2(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
-std::shared_ptr<std::vector<double>> test_function_3(std::shared_ptr<std::set<std::tuple<double,double,double>>> const&);
-std::shared_ptr<std::vector<double>> test_function_4(std::shared_ptr<std::set<std::tuple<double,double,double>>> const&);
+std::string get_function_name(int const&);
+std::tuple<interpolator, control_function> get_function_pair(int const&);
 
 #endif //TRIC_EXAMPLE_TEST_FUNCTIONS_H
