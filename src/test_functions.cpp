@@ -1,12 +1,13 @@
 #include "test_functions.h"
-#include "corners.h"
 #include "util.h"
 #include <iostream>
 
-#define SET_LIMIT 8
 #define NUM_OF_TESTS 6
 
 std::shared_ptr<std::vector<double>> fill_array(double*, std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
+
+typedef std::shared_ptr<std::vector<double>>(*interpolator)(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const&);
+typedef double(*control)(double, double, double);
 
 /**
  * f(x,y,z) = x^2 + y^2 + z^2
@@ -383,7 +384,7 @@ double function_6_dz(double x, double y, double z) {
  * @param test_points 
  * @return unique_ptr<double[]> an array of approximations of the same size as test_points
  */
-std::shared_ptr<std::vector<double>> test_function_1(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points) {
+std::shared_ptr<std::vector<double>> test_function_1(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
     double f[8] = {0, 1, 1, 2, 1, 2, 2, 3};
     double df_dx[8] = {0, 2, 0, 2, 0, 2, 0, 2};
     double df_dy[8] = {0, 0, 2, 2, 0, 0, 2, 2};
@@ -403,7 +404,7 @@ std::shared_ptr<std::vector<double>> test_function_1(std::shared_ptr<std::set<st
 /**
  * f(x,y,z)=sin(x+y+z)
  */
-std::shared_ptr<std::vector<double>> test_function_2(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_coords) {
+std::shared_ptr<std::vector<double>> test_function_2(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_coords, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
     double f[8];
     double df_dx[8];
     double df_dy[8];
@@ -416,10 +417,12 @@ std::shared_ptr<std::vector<double>> test_function_2(std::shared_ptr<std::set<st
     double alpha[64];
 
     // get base f values
-    for (int i = 0; i < SET_LIMIT; i++) {
-        double x = corners::points[i][0];
-        double y = corners::points[i][1];
-        double z = corners::points[i][2];
+    for (int i = 0; i < corners->size(); i++) {
+        auto triple = corners->at(i);
+        auto x = std::get<0>(triple);
+        auto y = std::get<1>(triple);
+        auto z = std::get<2>(triple);
+
         // base f vals
         f[i] = sin(x+y+z);
 
@@ -454,7 +457,7 @@ std::shared_ptr<std::vector<double>> test_function_2(std::shared_ptr<std::set<st
     return fill_array(alpha, test_coords);
 }
 
-std::shared_ptr<std::vector<double>> test_function_3(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_coords) {
+std::shared_ptr<std::vector<double>> test_function_3(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_coords, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
     double f[8];
     double df_dx[8];
     double df_dy[8];
@@ -466,10 +469,11 @@ std::shared_ptr<std::vector<double>> test_function_3(std::shared_ptr<std::set<st
 
     double alpha[64];
 
-    for (int i = 0; i < SET_LIMIT; i++) {
-        double x = corners::points[i][0];
-        double y = corners::points[i][1];
-        double z = corners::points[i][2];
+    for (int i = 0; i < corners->size(); i++) {
+        auto triple = corners->at(i);
+        auto x = std::get<0>(triple);
+        auto y = std::get<1>(triple);
+        auto z = std::get<2>(triple);
 
         f[i] = function_3(x, y, z);
         df_dx[i] = ((-1*x)/(pow((pow(x,2.0) + pow(y,2.0) + pow(z,2.0)), 3.0/2.0)));
@@ -484,7 +488,7 @@ std::shared_ptr<std::vector<double>> test_function_3(std::shared_ptr<std::set<st
     return fill_array(alpha, test_coords);
 }
 
-std::shared_ptr<std::vector<double>> test_function_4(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points) {
+std::shared_ptr<std::vector<double>> test_function_4(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
     double f[8];
     double df_dx[8];
     double df_dy[8];
@@ -496,10 +500,11 @@ std::shared_ptr<std::vector<double>> test_function_4(std::shared_ptr<std::set<st
 
     double alpha[64];
 
-    for (int i = 0; i < SET_LIMIT; i++) {
-        double x = corners::points[i][0];
-        double y = corners::points[i][1];
-        double z = corners::points[i][2];
+    for (int i = 0; i < corners->size(); i++) {
+        auto triple = corners->at(i);
+        auto x = std::get<0>(triple);
+        auto y = std::get<1>(triple);
+        auto z = std::get<2>(triple);
 
         f[i] = function_4(x, y, z);
         df_dx[i] = (2 * x * pow(y, 2.0) * pow(z, 2.0));
@@ -515,7 +520,7 @@ std::shared_ptr<std::vector<double>> test_function_4(std::shared_ptr<std::set<st
     return fill_array(alpha, test_points);
 }
 
-std::shared_ptr<std::vector<double>> test_function_5(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points) {
+std::shared_ptr<std::vector<double>> test_function_5(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
     double f[8];
     double df_dx[8];
     double df_dy[8];
@@ -527,12 +532,11 @@ std::shared_ptr<std::vector<double>> test_function_5(std::shared_ptr<std::set<st
 
     double alpha[64];
 
-    for (int i = 0; i < SET_LIMIT; i++) {
-        double x = corners::points[i][0];
-        double y = corners::points[i][1];
-        double z = corners::points[i][2];
-
-        x =
+    for (int i = 0; i < corners->size(); i++) {
+        auto triple = corners->at(i);
+        auto x = std::get<0>(triple);
+        auto y = std::get<1>(triple);
+        auto z = std::get<2>(triple);
 
         f[i] = function_5(x, y, z);
         df_dx[i] = function_5_dx(x, y, z);
@@ -548,7 +552,7 @@ std::shared_ptr<std::vector<double>> test_function_5(std::shared_ptr<std::set<st
     return fill_array(alpha, test_points);
 }
 
-std::shared_ptr<std::vector<double>> test_function_6(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points) {
+std::shared_ptr<std::vector<double>> test_function_6(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
     double f[8];
     double df_dx[8];
     double df_dy[8];
@@ -560,10 +564,11 @@ std::shared_ptr<std::vector<double>> test_function_6(std::shared_ptr<std::set<st
 
     double alpha[64];
 
-    for (int i = 0; i < SET_LIMIT; i++) {
-        double x = corners::points[i][0];
-        double y = corners::points[i][1];
-        double z = corners::points[i][2];
+    for (int i = 0; i < corners->size(); i++) {
+        auto triple = corners->at(i);
+        auto x = std::get<0>(triple);
+        auto y = std::get<1>(triple);
+        auto z = std::get<2>(triple);
 
         f[i] = function_5(x, y, z);
         df_dx[i] = function_5_dx(x, y, z);
@@ -653,7 +658,7 @@ std::string get_function_name(int const& id) {
     }
 }
 
-std::tuple<interpolator, control_function> get_function_pair(int const& id) {
+std::tuple<interpolator, control> get_function_pair(int const& id) {
     switch(id) {
         case 0: {
             return std::make_tuple(test_function_1, function_1);

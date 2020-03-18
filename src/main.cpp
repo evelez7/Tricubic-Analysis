@@ -2,16 +2,16 @@
 #include "util.h"
 #include <iostream>
 
+// define number of shifts, thus the number of unit cubes to interpolate in
 #define SHIFT_LIMIT 10
 
 void print_border();
 void print_shift_notice();
 void print_interval_notice(double);
-void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
-void run_tests(int const& id, std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
+void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> &);
+void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> &, int const&);
 
-double original_a = 0;
-double original_b = 1;
+
 
 int main(int argc, char** argv) {
     std::cout << "Generating " << get_num_of_test_points() << " test points" << std::endl;
@@ -22,53 +22,28 @@ int main(int argc, char** argv) {
     } else {
         auto id = atoi(argv[1]);
 
-        run_tests(id, test_points);
+        run_tests(test_points, id);
     }
 }
 
-void run_tests(int const& id, std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points) {
-    for (int i = 0; i < SHIFT_LIMIT; i++) {
-        print_border();
-
-        print_interval_notice(i);
-        if (i == 0) {
-            execute_single_test(id, test_points);
-            continue;
-        }
-
-        print_shift_notice();
-        auto shifted_points = shift_test_points(test_points, i);
-        execute_single_test(id, shifted_points);
-    }
+/**
+ * Calls appr
+ *
+ * @param id the id of the function to test, decided by check.cpp
+ * @param test_points the set of triples to test
+ * @overload Runs tests only for the function specified by the param id
+ */
+void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> & test_points, int const& id) {
+    execute_tests(test_points, id);
 }
 
-void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points) {
-   for (int i = 0; i < SHIFT_LIMIT; i++) {
-        print_border();
-       print_interval_notice(i);
-       if (i == 0) {
-           execute_all_tests(test_points);
-           continue;
-       }
-
-       print_shift_notice();
-       auto shifted_points = shift_test_points(test_points, i);
-       execute_all_tests(shifted_points);
-   }
+/**
+ * Calls appropriate function in check.h to execute tests
+ *
+ * @param test_points the set of triples to test
+ * @overload Runs tests for all functions within test_functions.h
+ */
+void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> & test_points) {
+    execute_tests(test_points);
 }
 
-void print_border() {
-    std::cout << std::endl;
-    for (int i = 0; i < 20; i++) {
-        std::cout << "*";
-    }
-    std::cout << std::endl << std::endl;
-}
-
-void print_shift_notice() {
-    std::cout << "Shifting points to conform with new interval" << std::endl << std::endl;
-}
-
-void print_interval_notice(double new_base) {
-    std::cout << "Testing on unit cube with interval [" << original_a + new_base << "," << original_b + new_base << "]" << std::endl << std::endl;
-}

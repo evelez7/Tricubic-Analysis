@@ -5,7 +5,12 @@
 #include <set>
 #include <tuple>
 
-void execute_all_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
-void execute_single_test(int const&, std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
+/**
+ * 
+ * @param new_interval_start
+ */
+void execute_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>>&, int const&);
+
+void execute_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>>&);
 
 #endif //TRIC_ANALYSIS_CHECK_H
