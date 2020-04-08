@@ -8,9 +8,10 @@
 #include <array>
 #include <vector>
 #include <memory>
+#include <list>
 #include <string>
 
-typedef std::shared_ptr<std::vector<double>>(*interpolator)(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const&);
+typedef std::shared_ptr<std::list<double>>(*interpolator)(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const&);
 typedef double(*control)(double, double, double);
 
 int get_num_of_tests();

@@ -1,14 +1,17 @@
 #include "test_functions.h"
 #include "util.h"
+#include <list>
 #include <iostream>
 
 #define NUM_OF_TESTS 6
 
-std::shared_ptr<std::vector<double>> fill_array(double*, std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
 
-typedef std::shared_ptr<std::vector<double>>(*interpolator)(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const&);
+
+typedef std::shared_ptr<std::list<double>>(*interpolator)(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const&);
 typedef double(*control)(double, double, double);
 
+std::shared_ptr<std::vector<double>> fill_array(double*, std::shared_ptr<std::set<std::tuple<double, double, double>>> const&);
+std::shared_ptr<std::list<double>> fill_list(double*, set_of_double_triples const&);
 /**
  * f(x,y,z) = x^2 + y^2 + z^2
  *
@@ -75,9 +78,8 @@ double function_4(double x, double y, double z) {
  */
 auto k = 0.5;
 double function_5(double x, double y, double z) {
-    auto r = sqrt(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0));
-
-    auto numerator = exp((-1.0*k)*r);
+ auto r = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 1.0/2.0);
+    auto numerator = exp(-k*r);
 
     auto answer = numerator/r;
 
@@ -88,13 +90,13 @@ double function_5(double x, double y, double z) {
 }
 
 double function_5_dx(double x, double y, double z) {
-    auto r = sqrt(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0));
+ auto r = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 1.0/2.0);
 
-    auto num_first_term = -1.0*exp(-1.0*k*r)*x;
-    auto denom_first_term = pow((pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0)), 3.0/2.0);
-    auto first_term = num_first_term/denom_first_term;
+    auto num_first = -exp(-k * r) * x;
+    auto denom_first = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 3.0/2.0);
+    auto first_term = num_first / denom_first;
 
-    auto num_second = exp(-1.0*k*r) * k * x;
+    auto num_second = k * exp(-k * r) * x;
     auto denom_second = pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0);
     auto second_term = num_second/denom_second;
 
@@ -107,13 +109,13 @@ double function_5_dx(double x, double y, double z) {
 }
 
 double function_5_dy(double x, double y, double z) {
-    auto r = sqrt(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0));
+ auto r = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 1.0/2.0);
 
-    auto num_first_term = -1.0*exp(-1.0*k*r)*y;
-    auto denom_first_term = pow((pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0)), 3.0/2.0);
-    auto first_term = num_first_term/denom_first_term;
+    auto num_first = -exp(-k * r) * y;
+    auto denom_first = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 3.0/2.0);
+    auto first_term = num_first / denom_first;
 
-    auto num_second = exp(-1.0*k*r) * k * y;
+    auto num_second = k * exp(-k * r) * y;
     auto denom_second = pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0);
     auto second_term = num_second/denom_second;
 
@@ -122,17 +124,18 @@ double function_5_dy(double x, double y, double z) {
     if (x == 0 && y == 0 && z == 0) {
         return 0;
     }
+
     return answer;
 }
 
 double function_5_dz(double x, double y, double z) {
-    auto r = sqrt(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0));
+ auto r = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 1.0/2.0);
 
-    auto num_first_term = -1.0*exp(-1*k*r)*z;
-    auto denom_first_term = pow((pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0)), 3.0/2.0);
-    auto first_term = num_first_term/denom_first_term;
+    auto num_first = -exp(-k * r) * z;
+    auto denom_first = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 3.0/2.0);
+    auto first_term = num_first / denom_first;
 
-    auto num_second = exp(-1.0*k*r) * k * z;
+    auto num_second = k * exp(-k * r) * z;
     auto denom_second = pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0);
     auto second_term = num_second/denom_second;
 
@@ -141,21 +144,22 @@ double function_5_dz(double x, double y, double z) {
     if (x == 0 && y == 0 && z == 0) {
         return 0;
     }
+
     return answer;
 }
 
 double function_5_dxdy(double x, double y, double z) {
-    auto r = sqrt(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0));
+    auto r = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 1.0/2.0);
 
-    auto num_first = 3.0*exp(-1*k*r)*x*y;
-    auto denom_first = pow((pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0)), 5.0/2.0);
+    auto num_first = 3.0 * exp(-k*r) * x * y;
+    auto denom_first = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 5.0/2.0);
     auto first_term = num_first/denom_first;
 
-    auto num_second = 3.0 * exp(-1*k*r) * k * x * y;
+    auto num_second = 1.5 * exp(-k*r) * x * y;
     auto denom_second = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 2.0);
     auto second_term = num_second/denom_second;
 
-    auto num_third = exp(-1.0*k*r) * pow(k, 2.0) * x * y;
+    auto num_third = 0.25 * exp(-k * r) * x * y;
     auto denom_third = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 3.0/2.0);
     auto third_term = num_third/denom_third;
 
@@ -168,17 +172,17 @@ double function_5_dxdy(double x, double y, double z) {
 }
 
 double function_5_dxdz(double x, double y, double z) {
-    auto r = sqrt(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0));
+  auto r = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 1.0/2.0);;
 
-    auto num_first = 3.0*exp(-1*k*r) * x * z;
-    auto denom_first = pow((pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0)), 5.0/2.0);
+    auto num_first = 3.0 * exp(-k*r) * x * z;
+    auto denom_first = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 5.0/2.0);
     auto first_term = num_first/denom_first;
 
-    auto num_second = 3.0 * exp(-1*k*r) * k * x * z;
+    auto num_second = 1.5 * exp(-k*r) * x * z;
     auto denom_second = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 2.0);
     auto second_term = num_second/denom_second;
 
-    auto num_third = exp(-1*k*r) * pow(k, 2.0) * x * z;
+    auto num_third = 0.25 * exp(-k * r) * x * z;
     auto denom_third = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 3.0/2.0);
     auto third_term = num_third/denom_third;
 
@@ -191,17 +195,17 @@ double function_5_dxdz(double x, double y, double z) {
 }
 
 double function_5_dydz(double x, double y, double z) {
-    auto r = sqrt(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0));
+     auto r = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 1.0/2.0);
 
-    auto num_first = 3.0*exp(-1*k*r) * y * z;
-    auto denom_first = pow((pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0)), 5.0/2.0);
+    auto num_first = 3.0 * exp(-k*r) * y * z;
+    auto denom_first = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 5.0/2.0);
     auto first_term = num_first/denom_first;
 
-    auto num_second = 3.0 * exp(-1*k*r) * k * y * z;
+    auto num_second = 1.5 * exp(-k*r) * y * z;
     auto denom_second = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 2.0);
     auto second_term = num_second/denom_second;
 
-    auto num_third = exp(-1*k*r) * pow(k, 2.0) * y * z;
+    auto num_third = 0.25 * exp(-k * r) * y * z;
     auto denom_third = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 3.0/2.0);
     auto third_term = num_third/denom_third;
 
@@ -214,21 +218,21 @@ double function_5_dydz(double x, double y, double z) {
 }
 
 double function_5_dxdydz(double x, double y, double z) {
-    auto r = sqrt(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0));
+    auto r = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 1.0/2.0);
 
-    auto num_first = -1.0*15.0*exp(-1*k*r) * x * y * z;
-    auto denom_first = pow((pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0)), 7.0/2.0);
+    auto num_first = -15.0 * exp(-k * r) * x * y * z;
+    auto denom_first = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 7.0/2.0);
     auto first_term = num_first/denom_first;
 
-    auto num_second = -1.0 * 15.0 * exp(-1*k*r) * k * x * y * z;
+    auto num_second = -7.5 * exp(-k * r) * x * y * z;
     auto denom_second = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 3.0);
     auto second_term = num_second/denom_second;
 
-    auto num_third = -1 * 6.0 * exp(-1*k*r) * pow(k, 2.0) * x * y * z;
+    auto num_third  = -1.5 * exp(-k * r) * x * y * z;
     auto denom_third = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 5.0/2.0);
     auto third_term = num_third/denom_third;
 
-    auto num_fourth = -1 * exp(-1 * k * r) * pow(k, 3.0) * x * y * z;
+    auto num_fourth = -0.125 * exp(-k * r) * x * y * z;
     auto denom_fourth = pow(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0), 2.0);
     auto fourth_term = num_fourth/denom_fourth;
 
@@ -384,7 +388,7 @@ double function_6_dz(double x, double y, double z) {
  * @param test_points 
  * @return unique_ptr<double[]> an array of approximations of the same size as test_points
  */
-std::shared_ptr<std::vector<double>> test_function_1(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
+std::shared_ptr<std::list<double>> test_function_1(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
     double f[8] = {0, 1, 1, 2, 1, 2, 2, 3};
     double df_dx[8] = {0, 2, 0, 2, 0, 2, 0, 2};
     double df_dy[8] = {0, 0, 2, 2, 0, 0, 2, 2};
@@ -398,13 +402,13 @@ std::shared_ptr<std::vector<double>> test_function_1(std::shared_ptr<std::set<st
 
     tricubic_get_coeff(alpha, f, df_dx, df_dy, df_dz, d2f_dxdy, d2f_dxdz, d2f_dydz, d3f_dxdydz);
 
-    return fill_array(alpha, test_points);
+    return fill_list(alpha, test_points);
 }
 
 /**
  * f(x,y,z)=sin(x+y+z)
  */
-std::shared_ptr<std::vector<double>> test_function_2(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_coords, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
+std::shared_ptr<std::list<double>> test_function_2(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_coords, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
     double f[8];
     double df_dx[8];
     double df_dy[8];
@@ -454,10 +458,10 @@ std::shared_ptr<std::vector<double>> test_function_2(std::shared_ptr<std::set<st
 //        std::cout << " coord: (" << x << "," << y << "," << z << std::endl << std::endl;
 //    }
 
-    return fill_array(alpha, test_coords);
+    return fill_list(alpha, test_coords);
 }
 
-std::shared_ptr<std::vector<double>> test_function_3(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_coords, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
+std::shared_ptr<std::list<double>> test_function_3(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_coords, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
     double f[8];
     double df_dx[8];
     double df_dy[8];
@@ -476,19 +480,22 @@ std::shared_ptr<std::vector<double>> test_function_3(std::shared_ptr<std::set<st
         auto z = std::get<2>(triple);
 
         f[i] = function_3(x, y, z);
-        df_dx[i] = ((-1*x)/(pow((pow(x,2.0) + pow(y,2.0) + pow(z,2.0)), 3.0/2.0)));
-        df_dy[i] =(-y/(pow((pow(x,2.0) + pow(y,2.0) + pow(z,2.0)), 7.0/2.0)));
-        df_dz[i] =(-z/(pow((pow(x,2.0) + pow(y,2.0) + pow(z,2.0)), 7.0/2.0)));
+
+        df_dx[i] = ((-x)/(pow((pow(x,2.0) + pow(y,2.0) + pow(z,2.0)), 3.0/2.0)));
+        df_dy[i] =(-y/(pow((pow(x,2.0) + pow(y,2.0) + pow(z,2.0)), 3.0/2.0)));
+        df_dz[i] =(-z/(pow((pow(x,2.0) + pow(y,2.0) + pow(z,2.0)), 3.0/2.0)));
+
         d2f_dxdy[i] = ((3.0*x*y)/(pow((pow(x,2.0) + pow(y,2.0) + pow(z,2.0)), 5.0/2.0)));
         d2f_dxdz[i] = ((3.0*x*z)/(pow((pow(x,2.0) + pow(y,2.0) + pow(z,2.0)), 5.0/2.0)));
         d2f_dydz[i] = ((3.0*x*z)/(pow((pow(x,2.0) + pow(y,2.0) + pow(z,2.0)), 5.0/2.0)));
-        d3f_dxdydz[i] = ((-15.0*x*y*z)/(pow((pow(x,2.0) + pow(y, 2.0) + pow(z,2.0)), 7.0/2.0)));
+
+        d3f_dxdydz[i] =((-15.0*x*y*z)/(pow((pow(x,2.0) + pow(y, 2.0) + pow(z,2.0)), 7.0/2.0)));
     }
     tricubic_get_coeff(alpha, f, df_dx, df_dy, df_dz, d2f_dxdy, d2f_dxdz, d2f_dydz,d3f_dxdydz);
-    return fill_array(alpha, test_coords);
+    return fill_list(alpha, test_coords);
 }
 
-std::shared_ptr<std::vector<double>> test_function_4(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
+std::shared_ptr<std::list<double>> test_function_4(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
     double f[8];
     double df_dx[8];
     double df_dy[8];
@@ -517,10 +524,10 @@ std::shared_ptr<std::vector<double>> test_function_4(std::shared_ptr<std::set<st
     }
 
     tricubic_get_coeff(alpha, f, df_dx, df_dy, df_dz, d2f_dxdy, d2f_dxdz, d2f_dydz,d3f_dxdydz);
-    return fill_array(alpha, test_points);
+    return fill_list(alpha, test_points);
 }
 
-std::shared_ptr<std::vector<double>> test_function_5(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
+std::shared_ptr<std::list<double>> test_function_5(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
     double f[8];
     double df_dx[8];
     double df_dy[8];
@@ -549,10 +556,10 @@ std::shared_ptr<std::vector<double>> test_function_5(std::shared_ptr<std::set<st
     }
 
     tricubic_get_coeff(alpha, f, df_dx, df_dy, df_dz, d2f_dxdy, d2f_dxdz, d2f_dydz,d3f_dxdydz);
-    return fill_array(alpha, test_points);
+    return fill_list(alpha, test_points);
 }
 
-std::shared_ptr<std::vector<double>> test_function_6(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
+std::shared_ptr<std::list<double>> test_function_6(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
     double f[8];
     double df_dx[8];
     double df_dy[8];
@@ -581,7 +588,7 @@ std::shared_ptr<std::vector<double>> test_function_6(std::shared_ptr<std::set<st
     }
 
     tricubic_get_coeff(alpha, f, df_dx, df_dy, df_dz, d2f_dxdy, d2f_dxdz, d2f_dydz,d3f_dxdydz);
-    return fill_array(alpha, test_points);
+    return fill_list(alpha, test_points);
 }
 //
 //std::shared_ptr<std::vector<double>> test_function_5(std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points) {
@@ -615,7 +622,6 @@ std::shared_ptr<std::vector<double>> test_function_6(std::shared_ptr<std::set<st
  */
 std::shared_ptr<std::vector<double>> fill_array(double* alpha, std::shared_ptr<std::set<std::tuple<double, double, double>>> const& test_points) {
     auto approximations_ptr = std::make_shared<std::vector<double>>();
-    approximations_ptr->reserve(test_points->size());
 
     for (auto coord : *test_points) {
         double x = std::get<0>(coord);
@@ -626,6 +632,22 @@ std::shared_ptr<std::vector<double>> fill_array(double* alpha, std::shared_ptr<s
     }
 
     return approximations_ptr;
+}
+
+std::shared_ptr<std::list<double>> fill_list(double* alpha, set_of_double_triples const& test_points) {
+    auto approx_ptr = std::make_shared<std::list<double>>();
+
+    for (auto point : *test_points) {
+        double x = std::get<0>(point);
+        double y = std::get<1>(point);
+        double z = std::get<2>(point);
+
+        auto result = tricubic_eval(alpha, x, y, z);
+
+        approx_ptr->push_back(result);
+    }
+
+    return approx_ptr;
 }
 
 int get_num_of_tests() {
@@ -644,7 +666,7 @@ std::string get_function_name(int const& id) {
             return "1/sqrt(x^2 + y^2 + z^2";
         }
         case 3: {
-            return "x^2 + y^2 + z^2";
+            return "x^2 * y^2 * z^2";
         }
         case 4: {
             return "(e^(-kr))/r";
@@ -658,6 +680,12 @@ std::string get_function_name(int const& id) {
     }
 }
 
+/**
+ * @brief Returns the appropriate function pair for a certain test
+ *
+ * @param id
+ * @return a 2-ple of type <interpolator, control>, both pointers to functions
+ */
 std::tuple<interpolator, control> get_function_pair(int const& id) {
     switch(id) {
         case 0: {

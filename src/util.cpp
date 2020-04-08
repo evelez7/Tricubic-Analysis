@@ -1,6 +1,7 @@
 #include "util.h"
 #include "corners.h"
 #include <random>
+#include <list>
 #include <iostream>
 
 #define POINT_LIMIT 500000
@@ -56,7 +57,7 @@ double shift_math(double const& original_component, double new_min) {
 }
 
 /**
- * Pseudo shifts the cube needed for tricubic interpolation by shifting the test points generated on a [0,1] interval
+ * @brief Pseudo shifts the unit cube by shifting the original test points
  *
  * @param original_test_points the original set of triples used for testing on the original unit cube
  * @param new_min the new minimum value that a component of a point can take (thus, the minimum for all the components)
@@ -69,11 +70,6 @@ set_of_double_triples shift_test_points(set_of_double_triples const& original_te
         auto x = std::get<0>(point);
         auto y = std::get<1>(point);
         auto z = std::get<2>(point);
-
-
-        if (new_min == 0) {
-            continue;
-        }
 
         auto new_x = shift_math(x, new_min);
         auto new_y = shift_math(y, new_min);
@@ -96,19 +92,17 @@ corners_matrix shift_corners(double const& new_interval_start) {
 
 
     for (int i = 0; i < original_corners::num_rows; i++) {
-        for (int j = 0; j < 1; j++) {
-            auto x = original_corners::points[i][j];
-            auto y = original_corners::points[i][j+1];
-            auto z = original_corners::points[i][j+2];
-            if (new_interval_start != 0) {
-                x = shift_math(x, new_interval_start);
-                y = shift_math(y, new_interval_start);
-                z = shift_math(z, new_interval_start);
-            }
+            auto x = original_corners::points[i][0];
+            auto y = original_corners::points[i][1];
+            auto z = original_corners::points[i][2];
+
+            x = shift_math(x, new_interval_start);
+            y = shift_math(y, new_interval_start);
+            z = shift_math(z, new_interval_start);
 
             auto new_corner = std::make_tuple(x, y, z);
             shifted_corners->at(i) = new_corner;
-        }
+
     }
 
     return shifted_corners;
@@ -123,7 +117,18 @@ corners_matrix shift_corners(double const& new_interval_start) {
 double norm(std::shared_ptr<std::vector<double>> const& to_norm) {
     double sum = 0;
     for (auto value : *to_norm) {
-        sum += pow(value, 2);
+        sum += pow(value, 2.0);
+    }
+
+    return sqrt(sum);
+}
+
+double norm(std::shared_ptr<std::list<double>> const& to_norm) {
+    double sum = 0;
+    auto to_norm_it = to_norm->begin();
+
+    for (; to_norm_it != to_norm->end(); ++to_norm_it) {
+        sum += pow(*to_norm_it, 2.0);
     }
 
     return sqrt(sum);

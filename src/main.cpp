@@ -5,14 +5,15 @@
 // define number of shifts, thus the number of unit cubes to interpolate in
 #define SHIFT_LIMIT 10
 
-void print_border();
-void print_shift_notice();
-void print_interval_notice(double);
-void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> &);
+// BEGIN forward declarations
 void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> &, int const&);
 
+void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> &);
+// END forward declarations
 
-
+/**
+ * @brief Determines whether the full test suite is executed
+ */ 
 int main(int argc, char** argv) {
     std::cout << "Generating " << get_num_of_test_points() << " test points" << std::endl;
     auto test_points = generate_test();
@@ -27,7 +28,7 @@ int main(int argc, char** argv) {
 }
 
 /**
- * Calls appr
+ * @brief Calls appropriate function in check.h to execute tests
  *
  * @param id the id of the function to test, decided by check.cpp
  * @param test_points the set of triples to test
@@ -38,7 +39,7 @@ void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> & t
 }
 
 /**
- * Calls appropriate function in check.h to execute tests
+ * @brief Calls appropriate function in check.h to execute tests
  *
  * @param test_points the set of triples to test
  * @overload Runs tests for all functions within test_functions.h
