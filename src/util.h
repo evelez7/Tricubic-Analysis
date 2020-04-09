@@ -18,7 +18,6 @@ typedef std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> corne
  */
 typedef std::shared_ptr<std::set<std::tuple<double, double, double>>> set_of_double_triples;
 std::shared_ptr<std::set<std::tuple<double, double, double>>> generate_test();
-double norm(std::shared_ptr<std::vector<double>> const&);
 double norm(std::shared_ptr<std::list<double>> const&);
 set_of_double_triples shift_test_points(set_of_double_triples const&, double);
 double get_num_of_test_points();

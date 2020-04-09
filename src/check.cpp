@@ -32,12 +32,6 @@ double check_error(std::shared_ptr<std::set<std::tuple<double, double, double>>>
 
 double error_calculation(std::shared_ptr<std::list<double>> const&, std::shared_ptr<std::list<double>> const&);
 
-std::shared_ptr<std::vector<double>>
-generate_expected(std::shared_ptr<std::set<std::tuple<double, double, double>>> test_points,
-                  double (*test_function)(double, double, double));
-
-double norm(std::shared_ptr<std::vector<double>> const &);
-
 std::shared_ptr<std::list<double>>
 generate_expected_list(set_of_double_triples,
                        double (*test_function)(double, double, double));
@@ -158,39 +152,6 @@ double check_error(std::shared_ptr<std::set<std::tuple<double, double, double>>>
 }
 
 /**
- * @brief Performs the math to calculate the error between two vectors 
- *
- * @param approximate_vector vector of the values approximated at the ith test point
- * @param exact_vector vector of the exact value of the ith test point
- * @return the error double
- */
-double error_calculation(std::shared_ptr<std::vector<double>> const &approximate_vector,
-                         std::shared_ptr<std::vector<double>> const &exact_vector) {
-    auto difference_vector = std::make_shared<std::vector<double>>();
-
-    if (approximate_vector->size() != exact_vector->size()) {
-        throw "Vectors not of equal size";
-    }
-
-    for (int i = 0; i < approximate_vector->size(); i++) {
-        auto approximate_val = approximate_vector->at(i);
-        auto exact_val = exact_vector->at(i);
-
-        difference_vector->push_back(exact_val - approximate_val);
-    }
-
-    auto difference_norm = norm(difference_vector);
-    auto approximate_norm = norm(approximate_vector);
-    auto difference_norm_squared = pow(difference_norm, 2.0);
-    auto approximate_norm_squared = pow(approximate_norm, 2.0);
-    auto exact_norm = norm(exact_vector);
-    auto exact_norm_squared = pow(exact_norm, 2.0);
-
-    auto final = sqrt(difference_norm_squared / exact_norm_squared);
-    return final;
-}
-
-/**
  * @brief Performs the math to calculate the error between two lists
  * 
  */
@@ -217,29 +178,6 @@ double error_calculation(std::shared_ptr<std::list<double>> const &approximate_l
 
     auto final = sqrt(difference_norm_squared / exact_norm_squared);
     return final;
-}
-
-/**
- * @brief Using the exact function, create the vector holding all exact values with respect to the test points
- *
- * @param test_points a set of triples, each one a test point in a given interval
- * @param test_function the exact function (which is interpolated else where)
- * @return vector holding the exact values for the exact function at a given triple of test_points
- */
-std::shared_ptr<std::vector<double>>
-generate_expected(std::shared_ptr<std::set<std::tuple<double, double, double>>> test_points,
-                  double (*test_function)(double, double, double)) {
-    auto exact_vector = std::make_shared<std::vector<double>>();
-
-    for (auto point : *test_points) {
-        auto x = std::get<0>(point);
-        auto y = std::get<1>(point);
-        auto z = std::get<2>(point);
-
-        exact_vector->push_back(test_function(x, y, z));
-    }
-
-    return exact_vector;
 }
 
 std::shared_ptr<std::list<double>>
