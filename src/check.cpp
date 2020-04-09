@@ -22,6 +22,27 @@ typedef std::shared_ptr<std::list<double>>(*interpolator)(std::shared_ptr<std::s
  */
 typedef double(*control)(double, double, double);
 
+// BEGIN forward declarations
+void execute_single_test(set_of_double_triples&, int const &, double const&);
+
+double check_error(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&,
+                   std::shared_ptr<std::set<std::tuple<double, double, double>>> const&,
+                   interpolator interpolator_function, control control_function,
+                   std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners);
+
+double error_calculation(std::shared_ptr<std::list<double>> const&, std::shared_ptr<std::list<double>> const&);
+
+std::shared_ptr<std::vector<double>>
+generate_expected(std::shared_ptr<std::set<std::tuple<double, double, double>>> test_points,
+                  double (*test_function)(double, double, double));
+
+double norm(std::shared_ptr<std::vector<double>> const &);
+
+std::shared_ptr<std::list<double>>
+generate_expected_list(set_of_double_triples,
+                       double (*test_function)(double, double, double));
+// END forward declarations
+
 double original_a = 0;
 double original_b = 1;
 
@@ -49,26 +70,6 @@ void print_shift_notice() {
 void print_interval_notice(double new_base) {
     std::cout << "Testing on unit cube with interval [" << original_a + new_base << "," << original_b + new_base << "]" << std::endl << std::endl;
 }
-
-// BEGIN forward declarations
-void execute_single_test(set_of_double_triples&, int const &, double const&);
-
-double check_error(std::shared_ptr<std::set<std::tuple<double, double, double>>> const & test_points,
-                   interpolator interpolator_function, control control_function,
-                   std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners);
-
-double error_calculation(std::shared_ptr<std::list<double>> const&, std::shared_ptr<std::list<double>> const&);
-
-std::shared_ptr<std::vector<double>>
-generate_expected(std::shared_ptr<std::set<std::tuple<double, double, double>>> test_points,
-                  double (*test_function)(double, double, double));
-
-double norm(std::shared_ptr<std::vector<double>> const &);
-
-std::shared_ptr<std::list<double>>
-generate_expected_list(set_of_double_triples,
-                       double (*test_function)(double, double, double));
-// END forward declarations
 
 /**
  * @brief See check.h for full documentation
@@ -109,25 +110,33 @@ void execute_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>>
  * @param id identifier for which function to execute specified in test_functions.cpp
  * @param new_interval_start the new lowest value from which a component of the unit cube can start (might be 0)
  */
-void execute_single_test(set_of_double_triples &test_points, int const &id,
+void execute_single_test(set_of_double_triples &original_test_points, int const &id,
                     double const &new_interval_start) {
-    auto error_value = 0.0;
     // if new interval is 0, then the original corners will be given
     auto corners = shift_corners(new_interval_start);
     auto function_name = get_function_name(id);
+
     // tuple<interpolator, control>
     auto function_pair = get_function_pair(id);
+
+    // both are pointers to functions
     auto interpolator = std::get<0>(function_pair);
     auto base = std::get<1>(function_pair);
 
-    test_points = shift_test_points(test_points, new_interval_start);
+    auto shifted_test_points = shift_test_points(original_test_points, new_interval_start);
 
 
     std::cout << "Testing f(x, y, z) = "
               << function_name
               << std::endl;
 
-    error_value = check_error(test_points, interpolator, base , corners);
+    double error_value = 0;
+
+//    if (new_interval_start == 0) {
+//        error_value = check_error(original_test_points, original_test_points, interpolator, base, corners);
+//    } else {
+        error_value = check_error(original_test_points, shifted_test_points, interpolator, base , corners);
+//    }
     std::cout << "Error value: " << error_value << std::endl << std::endl;
 }
 
@@ -138,11 +147,12 @@ void execute_single_test(set_of_double_triples &test_points, int const &id,
  * @param interpolator_function
  * @param control_function
  */
-double check_error(std::shared_ptr<std::set<std::tuple<double, double, double>>> const & test_points,
+double check_error(std::shared_ptr<std::set<std::tuple<double, double, double>>> const & original_test_points,
+        std::shared_ptr<std::set<std::tuple<double, double, double>>> const& shifted_test_points,
         interpolator interpolator_function, control control_function,
         std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
-    auto approximates = interpolator_function(test_points, corners);
-    auto exact = generate_expected_list(test_points, control_function);
+    auto approximates = interpolator_function(original_test_points, corners);
+    auto exact = generate_expected_list(shifted_test_points, control_function);
 
     return error_calculation(approximates, exact);
 }
