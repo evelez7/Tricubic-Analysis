@@ -1,7 +1,6 @@
 #include "util.h"
 #include "corners.h"
 #include <random>
-#include <list>
 #include <iostream>
 
 #define POINT_LIMIT 500000
@@ -106,21 +105,6 @@ corners_matrix shift_corners(double const& new_interval_start) {
     }
 
     return shifted_corners;
-}
-
-/**
- * Calculate the norm of a vector
- *
- * @param to_norm the vector whose norm is to be calculated
- * @return double representing the norm
- */
-double norm(std::shared_ptr<std::vector<double>> const& to_norm) {
-    double sum = 0;
-    for (auto value : *to_norm) {
-        sum += pow(value, 2.0);
-    }
-
-    return sqrt(sum);
 }
 
 double norm(std::shared_ptr<std::list<double>> const& to_norm) {
