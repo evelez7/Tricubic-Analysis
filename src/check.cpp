@@ -1,47 +1,96 @@
+/**
+ * \file
+ */
+
 #include "check.h"
 #include "test_functions.h"
 #include "util.h"
 #include <iostream>
 #include <list>
 
+/**
+ * \def SHIFT_LIMIT
+ * \brief The number of shifts to be conducted for the unit cube and thus the test points
+ */
 #define SHIFT_LIMIT 10
 
 /**
- * @typedef 
- * @brief  A set containing triples of doubles. Used for the n test points created at program start for function testing.
- */
-typedef std::shared_ptr<std::set<std::tuple<double, double, double>>> set_of_double_triples;
-
-/**
- * @typedef Alias for the functions in test_functions used for interpolating and estimating
+ * \typedef interpolator 
+ * \brief Pointer to a function representing the tricubic interpolator
  */
 typedef std::shared_ptr<std::list<double>>(*interpolator)(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const&);
 
 /**
- * @typedef Alias for the exact functions in test_functions used to compare the results of the respective interpolators
+ * \typedef control
+ * \brief Pointer to a function representing the exact function which has direct correspondance to the appropriate interpolator 
  */
 typedef double(*control)(double, double, double);
 
-// BEGIN forward declarations
+// BEGIN FORWARD DECLARATIONS
+
+/**
+ * \brief Selects a test to execute based on an id
+ * 
+ * \details Called many times from either overloaded execute_tests function. Also fetches all details to call check_error and shift_test_points 
+ * 
+ * \param test_points used to test interpolator and control functions
+ * \param id identifier for which function to execute specified in test_functions.cpp
+ * \param new_interval_start the new lowest value from which a component of the unit cube can start (might be 0)
+ */
 void execute_single_test(set_of_double_triples&, int const &, double const&);
 
-double check_error(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&,
-                   std::shared_ptr<std::set<std::tuple<double, double, double>>> const&,
-                   interpolator interpolator_function, control control_function,
-                   std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners);
+/**
+ * \brief Orchestrates necessities for calculating the error 
+ * 
+ * \details The superior to error_calculation. Gathers the values from the control and interpolator functions and sends them to error_calculation
+ *
+ * \param original_test_points The points used to evaluate the control
+ * \param shifted_test_points The points used to evaluate the interpolator (is the same as original at a = 0)
+ * \param interpolator_function The function used to estimate test points within a unit cube
+ * \param control_function The corresponding exact function of the interpolator
+ * \param corners The position of the corners of the unit cube
+ * \return the error double
+ */
+double check_error(set_of_double_triples const&, set_of_double_triples const&, interpolator, control, corners_matrix const&);
 
+/**
+ * \brief Performs the math to calculate the error between two vectors 
+ * 
+ * \details The formula is sqrt(||V_e - V_a||^2 / ||V_e||^2)
+ *
+ * \param approximate_list list of the values approximated at the ith test point
+ * \param exact_list list of the exact value of the ith test point
+ * \return the error double
+ */
 double error_calculation(std::shared_ptr<std::list<double>> const&, std::shared_ptr<std::list<double>> const&);
 
+/**
+ * \brief Generates a list of expected solutions
+ * 
+ * \details Generates a list which is used as a standard to compare the interpolated solutions by in check_error
+ * 
+ * \param test_points Evaluated using exact_function to generate expected solutions
+ * \param exact_function The corresponding control to an interpolator 
+ * \return a list of equal size to test_points that holds the expected evaluations of exact_function at some test point 
+ */
 std::shared_ptr<std::list<double>>
 generate_expected_list(set_of_double_triples,
                        double (*test_function)(double, double, double));
-// END forward declarations
 
+// END FORWARD DECLARATIONS
+
+/**
+ * \brief The initial beginning of the interval of the unit cube
+ */
 double original_a = 0;
+
+/**
+ * \brief The initial end of the interval of the unit cube
+ */
 double original_b = 1;
 
 /**
- * @brief Prints a line of asterisks to "beautify" output
+ * \brief Prints a line of asterisks to "beautify" output
  */
 void print_border() {
     std::cout << std::endl;
@@ -52,22 +101,19 @@ void print_border() {
 }
 
 /**
- * @brief Prints notice that original cube points will be shifted
+ * \brief Prints notice that original cube points will be shifted
  */ 
 void print_shift_notice() {
     std::cout << "Shifting points to conform with new interval" << std::endl;
 }
 
 /**
- * @brief Prints notice  
+ * \brief Prints notice of new interval 
  */
 void print_interval_notice(double new_base) {
     std::cout << "Testing on unit cube with interval [" << original_a + new_base << "," << original_b + new_base << "]" << std::endl << std::endl;
 }
 
-/**
- * @brief See check.h for full documentation
- */
 void execute_tests(set_of_double_triples& test_points) {
     for (int i = 0; i < SHIFT_LIMIT; i++) {
         print_border();
@@ -86,24 +132,12 @@ void execute_tests(set_of_double_triples& test_points) {
     }
 }
 
-/**
- * @brief See check.h for full documentation
- */
 void execute_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> &test_points, int const &id) {
     for (int i = 0; i < SHIFT_LIMIT; i++) {
         execute_single_test(test_points, id, i);
     }
 }
 
-/**
- * @brief Selects a test to execute based on an id
- * 
- * @details Called many times from either overloaded execute_tests function. Also fetches all details to call check_error and shift_test_points 
- * 
- * @param test_points used to test interpolator and control functions
- * @param id identifier for which function to execute specified in test_functions.cpp
- * @param new_interval_start the new lowest value from which a component of the unit cube can start (might be 0)
- */
 void execute_single_test(set_of_double_triples &original_test_points, int const &id,
                     double const &new_interval_start) {
     // if new interval is 0, then the original corners will be given
@@ -124,37 +158,21 @@ void execute_single_test(set_of_double_triples &original_test_points, int const 
               << function_name
               << std::endl;
 
-    double error_value = 0;
+    auto error_value = check_error(original_test_points, shifted_test_points, interpolator, base , corners);
 
-//    if (new_interval_start == 0) {
-//        error_value = check_error(original_test_points, original_test_points, interpolator, base, corners);
-//    } else {
-        error_value = check_error(original_test_points, shifted_test_points, interpolator, base , corners);
-//    }
     std::cout << "Error value: " << error_value << std::endl << std::endl;
 }
 
-/**
- * @brief
- * 
- * @param test_points
- * @param interpolator_function
- * @param control_function
- */
-double check_error(std::shared_ptr<std::set<std::tuple<double, double, double>>> const & original_test_points,
-        std::shared_ptr<std::set<std::tuple<double, double, double>>> const& shifted_test_points,
+double check_error(set_of_double_triples const& original_test_points,
+        set_of_double_triples const& shifted_test_points,
         interpolator interpolator_function, control control_function,
-        std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
+        corners_matrix const& corners) {
     auto approximates = interpolator_function(original_test_points, corners);
     auto exact = generate_expected_list(shifted_test_points, control_function);
 
     return error_calculation(approximates, exact);
 }
 
-/**
- * @brief Performs the math to calculate the error between two lists
- * 
- */
 double error_calculation(std::shared_ptr<std::list<double>> const &approximate_list,
                          std::shared_ptr<std::list<double>> const &exact_list) {
     auto difference_list = std::make_shared<std::list<double>>();
@@ -182,7 +200,7 @@ double error_calculation(std::shared_ptr<std::list<double>> const &approximate_l
 
 std::shared_ptr<std::list<double>>
 generate_expected_list(set_of_double_triples test_points,
-                  double (*test_function)(double, double, double)) {
+                  control exact_function) {
     auto exact_list = std::make_shared<std::list<double>>();
 
     for (auto point : *test_points) {
@@ -190,7 +208,7 @@ generate_expected_list(set_of_double_triples test_points,
         auto y = std::get<1>(point);
         auto z = std::get<2>(point);
 
-        exact_list->push_back(test_function(x, y, z));
+        exact_list->push_back(exact_function(x, y, z));
     }
 
     return exact_list;

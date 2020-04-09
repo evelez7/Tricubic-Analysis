@@ -4,9 +4,9 @@
 #include <set>
 #include <array>
 #include <tuple>
-#include <vector>
 #include <memory>
 #include <list>
+
 /**
  * @typedef represents the 2D matrix for the corners of a unit cube
  * The original points are defined in corners.h

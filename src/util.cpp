@@ -1,7 +1,6 @@
 #include "util.h"
 #include "corners.h"
 #include <random>
-#include <list>
 #include <iostream>
 
 #define POINT_LIMIT 500000
