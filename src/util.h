@@ -1,3 +1,4 @@
+/** \file util.h */
 #ifndef TRIC_ANALYSIS_UTIL_H
 #define TRIC_ANALYSIS_UTIL_H
 
@@ -17,6 +18,19 @@ typedef std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> corne
  * @typedef represents a set of triples containing only doubles, the data type for the test point structures
  */
 typedef std::shared_ptr<std::set<std::tuple<double, double, double>>> set_of_double_triples;
+
+/**
+ * \typedef interpolator 
+ * \brief Pointer to a function representing the tricubic interpolator
+ */
+typedef std::shared_ptr<std::list<double>>(*interpolator)(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const&);
+
+/**
+ * \typedef control
+ * \brief Pointer to a function representing the exact function which has direct correspondance to the appropriate interpolator 
+ */
+typedef double(*control)(double, double, double);
+
 std::shared_ptr<std::set<std::tuple<double, double, double>>> generate_test();
 double norm(std::shared_ptr<std::list<double>> const&);
 set_of_double_triples shift_test_points(set_of_double_triples const&, double);

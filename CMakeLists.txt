@@ -4,18 +4,26 @@ project(tric_analysis)
 set(CMAKE_CXX_STANDARD 14)
 set(SRC ./src)
 set(TRIC ./tricubic)
+set(TESTS ./src/test_functions)
 find_package(PythonLibs REQUIRED)
 
 set(
         SOURCE
         ${SRC}/main.cpp
         ${SRC}/corners.h
-        ${SRC}/test_functions.cpp
-        ${SRC}/test_functions.h
         ${SRC}/check.cpp
         ${SRC}/check.h
         ${SRC}/util.cpp
-        ${SRC}/util.h)
+        ${SRC}/util.h
+        ${TESTS}/test_1.cpp
+        ${TESTS}/test_2.cpp
+        ${TESTS}/test_3.cpp
+        ${TESTS}/test_4.cpp
+        ${TESTS}/test_5.cpp
+        ${TESTS}/test_6.cpp
+        ${TESTS}/test_util.cpp
+        ${TESTS}/test_util.h
+)
 
 set(
         TRICUBIC
@@ -24,7 +32,7 @@ set(
         ${TRIC}/ltricubic_utils.h
         ${TRIC}/tricubic.h
         ${TRIC}/tricubic_utils.cpp
-        )
+        src/test_functions/test_1.h src/test_functions/test_2.h src/test_functions/test_3.h src/test_functions/test_4.h src/test_functions/test_5.h src/test_functions/test_6.h)
 
 add_executable(tric_analysis ${SOURCE} ${TRICUBIC})
 include_directories(./tricubic)

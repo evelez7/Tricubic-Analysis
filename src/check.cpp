@@ -1,9 +1,10 @@
 /**
- * \file
+ * \file check.cpp
+ * \note All type definitions are defined in util.h
  */
 
 #include "check.h"
-#include "test_functions.h"
+#include "test_functions/test_util.h"
 #include "util.h"
 #include <iostream>
 #include <list>
@@ -13,18 +14,6 @@
  * \brief The number of shifts to be conducted for the unit cube and thus the test points
  */
 #define SHIFT_LIMIT 10
-
-/**
- * \typedef interpolator 
- * \brief Pointer to a function representing the tricubic interpolator
- */
-typedef std::shared_ptr<std::list<double>>(*interpolator)(std::shared_ptr<std::set<std::tuple<double, double, double>>> const&, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const&);
-
-/**
- * \typedef control
- * \brief Pointer to a function representing the exact function which has direct correspondance to the appropriate interpolator 
- */
-typedef double(*control)(double, double, double);
 
 // BEGIN FORWARD DECLARATIONS
 
