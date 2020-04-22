@@ -1,6 +1,11 @@
+/** \file main.cpp */
+
 #include "check.h"
-#include "util.h"
+#include "util/points_util.h"
+#include "util/corner_util.h"
 #include <iostream>
+#include <string.h>
+#include <getopt.h>
 
 // define number of shifts, thus the number of unit cubes to interpolate in
 #define SHIFT_LIMIT 10
@@ -16,10 +21,14 @@ void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> &);
  */ 
 int main(int argc, char** argv) {
     std::cout << "Generating " << get_num_of_test_points() << " test points" << std::endl;
-    auto test_points = generate_test();
+    auto test_points = generate_test_points();
 
     if (argc < 2) {
         run_tests(test_points);
+    } else if (std::strncmp(argv[1], "test", 4) == 0) {
+        auto random_corners = randomize_corners();
+
+        auto reset = reset_corners(random_corners);
     } else {
         auto id = atoi(argv[1]);
 

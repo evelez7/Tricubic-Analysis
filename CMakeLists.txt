@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 14)
 set(SRC ./src)
 set(TRIC ./tricubic)
 set(TESTS ./src/test_functions)
+set(UTIL ./src/util)
+
 find_package(PythonLibs REQUIRED)
 
 set(
@@ -13,8 +15,6 @@ set(
         ${SRC}/corners.h
         ${SRC}/check.cpp
         ${SRC}/check.h
-        ${SRC}/util.cpp
-        ${SRC}/util.h
         ${TESTS}/test_1.cpp
         ${TESTS}/test_2.cpp
         ${TESTS}/test_3.cpp
@@ -23,6 +23,12 @@ set(
         ${TESTS}/test_6.cpp
         ${TESTS}/test_util.cpp
         ${TESTS}/test_util.h
+        ${UTIL}/corner_util.h
+        ${UTIL}/corner_util.cpp
+        ${UTIL}/points_util.h
+        ${UTIL}/points_util.cpp
+        ${UTIL}/general_util.h
+        ${UTIL}/general_util.cpp
 )
 
 set(

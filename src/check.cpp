@@ -5,7 +5,9 @@
 
 #include "check.h"
 #include "test_functions/test_util.h"
-#include "util.h"
+#include "util/general_util.h"
+#include "util/corner_util.h"
+#include "util/points_util.h"
 #include <iostream>
 #include <list>
 
