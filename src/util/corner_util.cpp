@@ -4,7 +4,11 @@
 #include "../corners.h"
 #include <random>
 #include <iostream>
+#include <limits>
 
+double min_helper(double const&, double const&);
+
+double max_helper(double const&, double const&);
 /**
  *
  * \param new_interval_start
@@ -99,7 +103,6 @@ corners_matrix reset_corners(corners_matrix matrix_to_reset) {
 
     for (; corners_iterator != matrix_to_reset->end(); ++corners_iterator, ++p_id) {
         auto coordinate_triple = *corners_iterator;
-        std::cout << "coordinate: (" << std::get<0>(coordinate_triple) << "," << std::get<1>(coordinate_triple) << "," << std::get<2>(coordinate_triple) << ")" << std::endl;
         auto new_coord_triple = shift_math_reset(coordinate_triple, p_id);
         new_corners_matrix->at(p_id) = new_coord_triple;
     }
@@ -107,4 +110,65 @@ corners_matrix reset_corners(corners_matrix matrix_to_reset) {
 
 bool verify_corners(corners_matrix to_verify) {
 
+}
+
+/**
+ * \brief Find minimum x, y, z in set of points
+ * 
+ * \param points a matrix containing corners
+ */
+std::tuple<double, double, double> find_minimums(corners_matrix const& points) {
+    auto points_iterator = points->begin();
+
+    double x_min = INFINITY; double y_min = INFINITY; double z_min = INFINITY;
+
+    for (; points_iterator != points->end(); ++points_iterator) {
+        auto coordinate_triple = *points_iterator;
+
+        x_min = min_helper(std::get<0>(coordinate_triple), x_min);
+        y_min = min_helper(std::get<1>(coordinate_triple), y_min);
+        z_min = min_helper(std::get<2>(coordinate_triple), z_min);
+    }
+
+    return std::make_tuple(x_min, y_min, z_min);
+}
+
+double min_helper(double const& coord_component, double const& component_min) {
+    if (coord_component < component_min) {
+        return coord_component;
+    }
+    return component_min;
+}
+
+std::tuple<double, double, double> find_maximums(corners_matrix const& points) {
+    auto points_iterator = points->begin();
+
+    double x_max = -INFINITY; double y_max = -INFINITY; double z_max = -INFINITY;
+
+    for (; points_iterator != points->end(); ++points_iterator) {
+        auto coordinate_triple = *points_iterator;
+
+        x_max = max_helper(std::get<0>(coordinate_triple), x_max);
+        y_max = max_helper(std::get<1>(coordinate_triple), y_max);
+        z_max = max_helper(std::get<2>(coordinate_triple), z_max);
+    }
+
+    return std::make_tuple(x_max, y_max, z_max);
+}
+
+double max_helper(double const& coord_component, double const& component_max) {
+    if (coord_component > component_max) {
+        return coord_component;
+    }
+    return component_max;
+}
+
+corners_matrix create_enclosure(corners_matrix const& points, double const& distance) {
+    // NOTE: the components of these triples are not related
+    // they do not constitute a real coordinate within the data set
+    auto min_components = find_minimums(points);
+    auto max_components = find_maximums(points);
+
+    auto new_enclosure_corners = std::make_shared<std::array<std::tuple<double, double, double>, 8>>(); 
+    
 }

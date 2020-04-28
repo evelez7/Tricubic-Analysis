@@ -75,8 +75,6 @@ set_of_double_triples shift_test_points(set_of_double_triples const& original_te
     return shifted_points;
 }
 
-
-
 double get_num_of_test_points() {
     return POINT_LIMIT;
 }

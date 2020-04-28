@@ -1,7 +1,4 @@
-/**
- * \file check.cpp
- * \note All type definitions are defined in util.h
- */
+/** \file check.cpp */
 
 #include "check.h"
 #include "test_functions/test_util.h"
