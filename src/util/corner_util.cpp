@@ -171,14 +171,14 @@ corners_matrix create_enclosure(corners_matrix const& corners, std::tuple<double
     auto new_enclosure_corners = std::make_shared<std::array<std::tuple<double, double, double>, 8>>();
 
     // unfortunately, the order of the corners is not intuitive
-    new_enclosure_corners->at(0) = std::make_tuple(std::get<0>(min_components), std::get<1>(min_components), std::get<2>(min_components));
-    new_enclosure_corners->at(1) = std::make_tuple(std::get<0>(max_components), std::get<1>(min_components), std::get<2>(min_components));
-    new_enclosure_corners->at(2) = std::make_tuple(std::get<0>(min_components), std::get<1>(max_components), std::get<2>(min_components));
-    new_enclosure_corners->at(3) = std::make_tuple(std::get<0>(max_components), std::get<1>(max_components), std::get<0>(min_components));
-    new_enclosure_corners->at(4) = std::make_tuple(std::get<0>(min_components), std::get<1>(min_components), std::get<2>(min_components));
-    new_enclosure_corners->at(5) = std::make_tuple(std::get<0>(max_components), std::get<1>(min_components), std::get<2>(max_components));
-    new_enclosure_corners->at(6) = std::make_tuple(std::get<0>(min_components), std::get<1>(max_components), std::get<2>(max_components));
-    new_enclosure_corners->at(7) = std::make_tuple(std::get<0>(max_components), std::get<1>(max_components), std::get<2>(max_components));
+    new_enclosure_corners->at(0) = std::make_tuple(std::get<0>(min_components) + distance, std::get<1>(min_components) + distance, std::get<2>(min_components) + distance);
+    new_enclosure_corners->at(1) = std::make_tuple(std::get<0>(max_components) + distance, std::get<1>(min_components) + distance, std::get<2>(min_components) + distance);
+    new_enclosure_corners->at(2) = std::make_tuple(std::get<0>(min_components) + distance, std::get<1>(max_components) + distance, std::get<2>(min_components) + distance);
+    new_enclosure_corners->at(3) = std::make_tuple(std::get<0>(max_components) + distance, std::get<1>(max_components) + distance, std::get<0>(min_components) + distance);
+    new_enclosure_corners->at(4) = std::make_tuple(std::get<0>(min_components) + distance, std::get<1>(min_components) + distance, std::get<2>(min_components) + distance);
+    new_enclosure_corners->at(5) = std::make_tuple(std::get<0>(max_components) + distance, std::get<1>(min_components) + distance, std::get<2>(max_components) + distance);
+    new_enclosure_corners->at(6) = std::make_tuple(std::get<0>(min_components) + distance, std::get<1>(max_components) + distance, std::get<2>(max_components) + distance);
+    new_enclosure_corners->at(7) = std::make_tuple(std::get<0>(max_components) + distance, std::get<1>(max_components) + distance, std::get<2>(max_components) + distance);
 
     return new_enclosure_corners;
 }

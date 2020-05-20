@@ -25,9 +25,9 @@
  * \param id identifier for which function to execute specified in test_functions.cpp
  * \param new_interval_start the new lowest value from which a component of the unit cube can start (might be 0)
  */
-void execute_single_test(set_of_double_triples&, int const &, double const&);
+double execute_single_test(set_of_double_triples&, int const &, double const&);
 
-void execute_single_test(set_of_double_triples&, int const&, corners_matrix &, double const& min = 0, double const& max = 0);
+double execute_single_test(set_of_double_triples&, int const&, corners_matrix &, double const& min = 0, double const& max = 0);
 /**
  * \brief Orchestrates necessities for calculating the error 
  * 
@@ -127,13 +127,13 @@ void execute_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>>
     }
 }
 
-void execute_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> &test_points, corners_matrix & enclosure) {
+std::vector<double> execute_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> &test_points, corners_matrix & enclosure) {
     for (int i = 0; i < get_num_of_tests(); i++) {
         execute_single_test(test_points, i, enclosure);
     }
 }
 
-void execute_single_test(set_of_double_triples &original_test_points, int const &id,
+double execute_single_test(set_of_double_triples &original_test_points, int const &id,
                     double const &new_interval_start) {
     // if new interval is 0, then the original corners will be given
     auto corners = shift_corners(new_interval_start);
@@ -156,9 +156,10 @@ void execute_single_test(set_of_double_triples &original_test_points, int const 
     auto error_value = check_error(original_test_points, shifted_test_points, interpolator, base , corners);
 
     std::cout << "Error value: " << error_value << std::endl << std::endl;
+    return error_value;
 }
 
-void execute_single_test(set_of_double_triples &original_test_points, int const &id,
+double execute_single_test(set_of_double_triples &original_test_points, int const &id,
                          corners_matrix & enclosure, double const& min, double const& max) {
     auto function_name = get_function_name(id);
 
@@ -178,6 +179,7 @@ void execute_single_test(set_of_double_triples &original_test_points, int const 
     auto error_value = check_error(original_test_points, original_test_points, interpolator, base , enclosure);
 
     std::cout << "Error value: " << error_value << std::endl << std::endl;
+    return error_value;
 }
 
 double check_error(set_of_double_triples const& original_test_points,

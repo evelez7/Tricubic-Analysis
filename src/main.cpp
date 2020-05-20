@@ -19,11 +19,14 @@ void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> &);
 /**
  * \brief Run tests related to interpolating in a non-convenient area
  *
- * \details
+ * \details Two types of enclosure tests exist: distanced and in-place
+ * Mode 0 runs both tests, mode 1 runs distanced and mode 2 runs in place
  *
  * \param verbose an optional argument to enable additional output
+ * \param mode decides which mode to run the tests, defaults to 0 (both)
  */
-void run_enclosure_tests(bool const& verbose = false);
+void run_enclosure_tests(bool const& verbose = false, int const& mode = 0, double const& distance = 0.00000000000001);
+
 // END forward declarations
 
 /**
@@ -73,45 +76,55 @@ void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> & t
     execute_tests(test_points);
 }
 
-void run_enclosure_tests(bool const& verbose) {
-    if (verbose)
-        std::cout << "Beginning tests of enclosures" << std::endl;
-
-    // set the corners to random points in 3D space
-    auto random_corners = randomize_corners();
-    
-    auto original_maximums = find_maximums(random_corners);
-    auto original_minimums = find_minimums(random_corners);
-
-
-    auto enclosure = create_enclosure(random_corners, original_minimums, original_maximums, 0.000000000001);
+void enclosure_math(corners_matrix & enclosure, corners_matrix const& random_corners, std::tuple<double, double, double> const& interval_minimums, std::tuple<double, double, double> const& interval_maximums) {
 
     auto enclosure_minimums = find_minimums(enclosure);
     auto enclosure_bar = get_coordinate_bars(enclosure, enclosure_minimums);
 
     auto enclosure_maximums = find_maximums(enclosure);
-    auto delta_components = get_component_deltas(enclosure_maximums, enclosure_minimums);
-    auto enclosure_tilde = get_coordinate_tilde(enclosure_bar, delta_components);
+    auto component_deltas = get_component_deltas(enclosure_maximums, enclosure_minimums);
+    auto enclosure_tilde = get_coordinate_tilde(enclosure_bar, component_deltas);
 
-    auto random_points = generate_test_points(std::get<0>(original_minimums), std::get<0>(original_maximums));
+    // FIX: this might not work since it is possible the different components will exist within different intervals
+    auto random_points = generate_test_points(std::get<0>(interval_minimums),
+            std::get<0>(interval_maximums),
+            std::get<1>(interval_minimums),
+            std::get<1>(interval_maximums),
+            std::get<2>(interval_minimums),
+            std::get<2>(interval_maximums));
     execute_tests(random_points, enclosure);
 }
 
-void enclosure_testing_generalized() {
-    auto random_points = generate_test_points();
+void run_enclosure_tests(bool const& verbose, int const& mode, double const& distance) {
+    std::cout << "Beginning tests of enclosures" << std::endl;
 
-    auto original_maximums = find_maximums(random_points);
-    auto original_minimums = find_minimums(random_points);
-//    auto enclosure = create_enclosure(random_points, original_minimums, original_maximums);
+    auto random_corners = randomize_corners();
 
+    auto original_maximums = find_maximums(random_corners);
+    auto original_minimums = find_minimums(random_corners);
+    corners_matrix enclosure;
 
+    switch(mode) {
+        case 0:
+            std::cout << "Testing distanced enclosures at " << distance << " length" << std::endl << std::endl;
+            enclosure = create_enclosure(random_corners, original_minimums, original_maximums, distance);
+            enclosure_math(enclosure, random_corners, original_minimums, original_maximums);
+
+            std:: cout << "Testing inplace enclosure" << std::endl << std::endl;
+            enclosure = create_enclosure(random_corners, original_minimums, original_maximums);
+            enclosure_math(enclosure, random_corners, original_minimums, original_maximums);
+            return;
+        case 1:
+            std::cout << "Testing distanced enclosures at " << distance << " length" << std::endl << std::endl;
+            enclosure = create_enclosure(random_corners, original_minimums, original_maximums, distance);
+            break;
+        case 2:
+            std:: cout << "Testing inplace enclosure" << std::endl << std::endl;
+            enclosure = create_enclosure(random_corners, original_minimums, original_maximums);
+            break;
+        default:
+            throw "something went wrong";
+    }
+    enclosure_math(enclosure, random_corners, original_minimums, original_maximums);
 }
 
-void enclosure_testing_harder() {
-    auto random_points = generate_test_points();
-
-    auto original_maximums = find_maximums(random_points);
-    auto original_minimums = find_minimums(random_points);
-
-
-}

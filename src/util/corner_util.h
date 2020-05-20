@@ -29,6 +29,6 @@ std::tuple<double, double, double> find_minimums(set_of_double_triples const&);
  * \param points
  * \param distance distance that the enclosure should be away from the reference points
  */
-corners_matrix create_enclosure(corners_matrix const& , std::tuple<double, double, double> const&, std::tuple<double, double, double> const&, double const& distance = 1);
+corners_matrix create_enclosure(corners_matrix const& , std::tuple<double, double, double> const&, std::tuple<double, double, double> const&, double const& distance = 0.0);
 
 #endif //TRIC_ANALYSIS_CORNERS_UTIL_H

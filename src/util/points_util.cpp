@@ -6,16 +6,6 @@
 
 #define POINT_LIMIT 500000
 
-/**
- * \typedef represents the 2D matrix for the corners of a unit cube
- * The original points are defined in corners.h
- */
-typedef std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> corners_matrix;
-
-/**
- * \typedef represents a set of triples containing only doubles, the data type for the test point structures
- */
-typedef std::shared_ptr<std::set<std::tuple<double, double, double>>> set_of_double_triples;
 
 std::tuple<double, double, double> shift_math_reset(std::tuple<double, double, double> const&, int);
 
@@ -49,6 +39,16 @@ set_of_double_triples generate_test_points(double const& min, double const& max)
     return test_points;
 }
 
+/**
+ *
+ * @param x_min
+ * @param x_max
+ * @param y_min
+ * @param y_max
+ * @param z_min
+ * @param z_max
+ * @return
+ */
 set_of_double_triples generate_test_points(double const& x_min, double const& x_max, double const& y_min, double const& y_max, double const& z_min, double const& z_max) {
     std::uniform_real_distribution<double> x_interval(x_min, x_max);
     std::random_device x_seed;
@@ -77,10 +77,15 @@ set_of_double_triples generate_test_points(double const& x_min, double const& x_
         z_values->insert(z_interval(z_rng));
     }
 
-//    auto points = std::make_shared<std::list<double>>()
-//    for (int i = 0; i < POINT_LIMIT; i++) {
-//
-//    }
+    auto new_test_points = std::make_shared<std::set<std::tuple<double, double, double>>>();
+    auto x_iterator = x_values->begin();
+    auto y_iterator = y_values->begin();
+    auto z_iterator = z_values->begin();
+
+    for (; x_iterator != x_values->end(); ++x_iterator, ++y_iterator, *z_iterator) {
+        new_test_points->emplace(std::make_tuple(*x_iterator, *y_iterator, *z_iterator));
+    }
+    return new_test_points;
 }
 
 /**

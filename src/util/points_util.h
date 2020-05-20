@@ -5,6 +5,7 @@
 #include "general_util.h"
 
 std::shared_ptr<std::set<std::tuple<double, double, double>>> generate_test_points(double const& min = 0, double const& max = 1);
+set_of_double_triples generate_test_points(double const&, double const&, double const&, double const&, double const&, double const&);
 
 double norm(std::shared_ptr<std::list<double>> const&);
 
