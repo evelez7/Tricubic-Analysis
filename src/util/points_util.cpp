@@ -4,7 +4,7 @@
 #include <random>
 #include <iostream>
 
-#define POINT_LIMIT 500000
+#define POINT_LIMIT 1000000
 
 
 std::tuple<double, double, double> shift_math_reset(std::tuple<double, double, double> const&, int);

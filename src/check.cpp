@@ -127,10 +127,13 @@ void execute_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>>
     }
 }
 
-std::vector<double> execute_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> &test_points, corners_matrix & enclosure) {
+std::shared_ptr<std::vector<double>> execute_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> &test_points, corners_matrix & enclosure) {
+    auto error_vector = std::make_shared<std::vector<double>>();
+
     for (int i = 0; i < get_num_of_tests(); i++) {
-        execute_single_test(test_points, i, enclosure);
+        error_vector->push_back(execute_single_test(test_points, i, enclosure));
     }
+    return error_vector;
 }
 
 double execute_single_test(set_of_double_triples &original_test_points, int const &id,

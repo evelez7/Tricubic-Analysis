@@ -30,6 +30,6 @@ void execute_tests(set_of_double_triples &, int const&);
  */
 void execute_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>>&);
 
-std::vector<double> execute_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>>&, corners_matrix &);
+std::shared_ptr<std::vector<double>> execute_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>>&, corners_matrix &);
 
 #endif //TRIC_ANALYSIS_CHECK_H
