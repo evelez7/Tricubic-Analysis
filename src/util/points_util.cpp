@@ -25,8 +25,8 @@ std::tuple<double, double, double> shift_math_reset(std::tuple<double, double, d
  * \param num_of_points the number of random points to generate
  * \return set<double> a set of triples representing (x,y,z) coordinates
  */
-set_of_double_triples generate_test_points() {
-    std::uniform_real_distribution<double> interval(0, 1); // P(i|a,b) = 1/(b-a)
+set_of_double_triples generate_test_points(double const& min, double const& max) {
+    std::uniform_real_distribution<double> interval(min, max); // P(i|a,b) = 1/(b-a)
     std::random_device seed; // used to ensure randomness
     std::mt19937 rng(seed()); // Mersenne Twister random number generator
 
@@ -49,6 +49,40 @@ set_of_double_triples generate_test_points() {
     return test_points;
 }
 
+set_of_double_triples generate_test_points(double const& x_min, double const& x_max, double const& y_min, double const& y_max, double const& z_min, double const& z_max) {
+    std::uniform_real_distribution<double> x_interval(x_min, x_max);
+    std::random_device x_seed;
+    std::mt19937 x_rng(x_seed());
+
+    auto x_values = std::make_unique<std::set<double>>();
+    for (int i = 0; i < POINT_LIMIT; i++) {
+        x_values->insert(x_interval(x_rng));
+    }
+
+    std::uniform_real_distribution<double> y_interval(y_min, y_max);
+    std::random_device y_seed;
+    std::mt19937 y_rng(y_seed());
+
+    auto y_values = std::make_unique<std::set<double>>();
+    for (int i = 0; i < POINT_LIMIT; i++) {
+        y_values->insert(y_interval(y_rng));
+    }
+
+    std::uniform_real_distribution<double> z_interval(z_min, z_max);
+    std::random_device z_seed;
+    std::mt19937 z_rng(z_seed());
+
+    auto z_values = std::make_unique<std::set<double>>();
+    for (int i = 0; i < POINT_LIMIT; i++) {
+        z_values->insert(z_interval(z_rng));
+    }
+
+//    auto points = std::make_shared<std::list<double>>()
+//    for (int i = 0; i < POINT_LIMIT; i++) {
+//
+//    }
+}
+
 /**
  * \brief Pseudo shifts the unit cube by shifting the original test points
  *
@@ -67,6 +101,25 @@ set_of_double_triples shift_test_points(set_of_double_triples const& original_te
         auto new_x = shift(x, new_min);
         auto new_y = shift(y, new_min);
         auto new_z = shift(z, new_min);
+
+        auto new_triple = std::make_tuple(new_x, new_y, new_z);
+        shifted_points->insert(new_triple);
+    }
+
+    return shifted_points;
+}
+
+set_of_double_triples shift_test_points(set_of_double_triples const& original_test_points, double new_min, double new_max) {
+    auto shifted_points = std::make_shared<std::set<std::tuple<double, double, double>>>();
+
+    for (auto point : *original_test_points) {
+        auto x = std::get<0>(point);
+        auto y = std::get<1>(point);
+        auto z = std::get<2>(point);
+
+        auto new_x = shift(x, new_min, new_max);
+        auto new_y = shift(y, new_min, new_max);
+        auto new_z = shift(z, new_min, new_max);
 
         auto new_triple = std::make_tuple(new_x, new_y, new_z);
         shifted_points->insert(new_triple);

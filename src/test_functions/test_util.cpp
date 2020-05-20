@@ -1,5 +1,5 @@
 #include "test_util.h"
-#include "util.h"
+#include "../util/general_util.h"
 
 #include <iostream>
 #include <list>

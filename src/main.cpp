@@ -3,6 +3,7 @@
 #include "check.h"
 #include "util/points_util.h"
 #include "util/corner_util.h"
+#include "util/general_util.h"
 #include <iostream>
 #include <string.h>
 #include <getopt.h>
@@ -14,22 +15,37 @@
 void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> &, int const&);
 
 void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> &);
+
+/**
+ * \brief Run tests related to interpolating in a non-convenient area
+ *
+ * \details
+ *
+ * \param verbose an optional argument to enable additional output
+ */
+void run_enclosure_tests(bool const& verbose = false);
 // END forward declarations
 
 /**
  * @brief Determines whether the full test suite is executed
  */ 
 int main(int argc, char** argv) {
-    std::cout << "Generating " << get_num_of_test_points() << " test points" << std::endl;
-    auto test_points = generate_test_points();
 
+    // TODO: implement using getopt for flags`
+    // TODO: Create emthod for the points testing
     if (argc < 2) {
+        std::cout << "Generating " << get_num_of_test_points() << " test points" << std::endl;
+        auto test_points = generate_test_points();
         run_tests(test_points);
-    } else if (std::strncmp(argv[1], "test", 4) == 0) {
-        auto random_corners = randomize_corners();
 
-        auto reset = reset_corners(random_corners);
+    } else if (strncmp(argv[1], "enclosures", 10) == 0) {
+        // TODO: get verbose flag from commandline options
+        bool temp_verbose = true;
+        run_enclosure_tests(temp_verbose);
+
     } else {
+        std::cout << "Generating " << get_num_of_test_points() << " test points" << std::endl;
+        auto test_points = generate_test_points();
         auto id = atoi(argv[1]);
 
         run_tests(test_points, id);
@@ -57,3 +73,45 @@ void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> & t
     execute_tests(test_points);
 }
 
+void run_enclosure_tests(bool const& verbose) {
+    if (verbose)
+        std::cout << "Beginning tests of enclosures" << std::endl;
+
+    // set the corners to random points in 3D space
+    auto random_corners = randomize_corners();
+    
+    auto original_maximums = find_maximums(random_corners);
+    auto original_minimums = find_minimums(random_corners);
+
+
+    auto enclosure = create_enclosure(random_corners, original_minimums, original_maximums, 0.000000000001);
+
+    auto enclosure_minimums = find_minimums(enclosure);
+    auto enclosure_bar = get_coordinate_bars(enclosure, enclosure_minimums);
+
+    auto enclosure_maximums = find_maximums(enclosure);
+    auto delta_components = get_component_deltas(enclosure_maximums, enclosure_minimums);
+    auto enclosure_tilde = get_coordinate_tilde(enclosure_bar, delta_components);
+
+    auto random_points = generate_test_points(std::get<0>(original_minimums), std::get<0>(original_maximums));
+    execute_tests(random_points, enclosure);
+}
+
+void enclosure_testing_generalized() {
+    auto random_points = generate_test_points();
+
+    auto original_maximums = find_maximums(random_points);
+    auto original_minimums = find_minimums(random_points);
+//    auto enclosure = create_enclosure(random_points, original_minimums, original_maximums);
+
+
+}
+
+void enclosure_testing_harder() {
+    auto random_points = generate_test_points();
+
+    auto original_maximums = find_maximums(random_points);
+    auto original_minimums = find_minimums(random_points);
+
+
+}

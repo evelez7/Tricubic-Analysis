@@ -11,14 +11,14 @@ namespace test_2 {
  * @param z
  * @return the value of f(x) @ (x,y,z) of type double
  */
-double test_2::exact(double x, double y, double z) {
+double exact(double x, double y, double z) {
   return sin(x + y + z);
 }
 
 /**
  * f(x,y,z)=sin(x+y+z)
  */
-std::shared_ptr<std::list<double>> test_2::interpolator(std::shared_ptr<std::set<std::tuple<double, double, double>>> const &test_coords, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
+std::shared_ptr<std::list<double>> interpolator(std::shared_ptr<std::set<std::tuple<double, double, double>>> const &test_coords, std::shared_ptr<std::array<std::tuple<double, double, double>, 8>> const& corners) {
   double f[8];
   double df_dx[8];
   double df_dy[8];
