@@ -1,13 +1,13 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.13)
 project(tric_analysis)
+
+find_package(tricubic)
 
 set(CMAKE_CXX_STANDARD 14)
 set(SRC ./src)
 set(TRIC ./tricubic)
 set(TESTS ./src/test_functions)
 set(UTIL ./src/util)
-
-find_package(PythonLibs REQUIRED)
 
 set(
         SOURCE

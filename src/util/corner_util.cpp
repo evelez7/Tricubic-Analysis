@@ -62,55 +62,18 @@ corners_matrix randomize_corners(double min, double max) {
     return translated_matrix;
 }
 
-std::tuple<double, double, double> shift_math_reset(std::tuple<double, double, double> const& coordinate_triple, int point_id) {
-    auto corresponding_unit_corner = original_corners::points[point_id];
-
-    auto to_reset_x = std::get<0>(coordinate_triple);
-    auto to_reset_y = std::get<1>(coordinate_triple);
-    auto to_reset_z = std::get<2>(coordinate_triple);
-
-    double new_x, new_y, new_z;
-
-    auto reset_corner = std::make_shared<std::tuple<double, double, double>>();
-    if (std::abs(std::abs(to_reset_x) - corresponding_unit_corner[0]) > 1) {
-        new_x = std::abs(to_reset_x) - std::abs(std::abs(to_reset_x) - std::floor(std::abs(to_reset_x)));
-    } else {
-        new_x = to_reset_x;
-    }
-
-    if (std::abs(std::abs(to_reset_y) - corresponding_unit_corner[1]) > 1) {
-        new_y = std::abs(to_reset_y) - std::abs(std::abs(to_reset_y) - 1);
-    } else {
-        new_y = to_reset_y;
-    }
-
-    if (std::abs(std::abs(to_reset_z) - corresponding_unit_corner[2]) > 1) {
-        new_z = std::abs(to_reset_z) - std::abs(std::abs(to_reset_z) - 1);
-    } else {
-        new_z = to_reset_z;
-    }
-
-    new_x = new_x / new_x;
-    new_y = new_y / new_y;
-//    new_z =
-}
-
-corners_matrix reset_corners(corners_matrix matrix_to_reset) {
-    auto corners_iterator = matrix_to_reset->begin();
-
-    auto new_corners_matrix = std::make_shared<std::array<std::tuple<double, double, double>, 8>>();
-    int p_id = 0;
-
-    for (; corners_iterator != matrix_to_reset->end(); ++corners_iterator, ++p_id) {
-        auto coordinate_triple = *corners_iterator;
-        auto new_coord_triple = shift_math_reset(coordinate_triple, p_id);
-        new_corners_matrix->at(p_id) = new_coord_triple;
-    }
-}
-
-bool verify_corners(corners_matrix to_verify) {
-
-}
+//corners_matrix reset_corners(corners_matrix matrix_to_reset) {
+//    auto corners_iterator = matrix_to_reset->begin();
+//
+//    auto new_corners_matrix = std::make_shared<std::array<std::tuple<double, double, double>, 8>>();
+//    int p_id = 0;
+//
+//    for (; corners_iterator != matrix_to_reset->end(); ++corners_iterator, ++p_id) {
+//        auto coordinate_triple = *corners_iterator;
+//        auto new_coord_triple = shift_math_reset(coordinate_triple, p_id);
+//        new_corners_matrix->at(p_id) = new_coord_triple;
+//    }
+//}
 
 /**
  * \brief Find minimum x, y, z in set of points
@@ -118,6 +81,22 @@ bool verify_corners(corners_matrix to_verify) {
  * \param points a matrix containing corners
  */
 std::tuple<double, double, double> find_minimums(corners_matrix const& points) {
+    auto points_iterator = points->begin();
+
+    double x_min = INFINITY; double y_min = INFINITY; double z_min = INFINITY;
+
+    for (; points_iterator != points->end(); ++points_iterator) {
+        auto coordinate_triple = *points_iterator;
+
+        x_min = min_helper(std::get<0>(coordinate_triple), x_min);
+        y_min = min_helper(std::get<1>(coordinate_triple), y_min);
+        z_min = min_helper(std::get<2>(coordinate_triple), z_min);
+    }
+
+    return std::make_tuple(x_min, y_min, z_min);
+}
+
+std::tuple<double, double, double> find_minimums(set_of_double_triples const& points) {
     auto points_iterator = points->begin();
 
     double x_min = INFINITY; double y_min = INFINITY; double z_min = INFINITY;
@@ -156,6 +135,21 @@ std::tuple<double, double, double> find_maximums(corners_matrix const& points) {
     return std::make_tuple(x_max, y_max, z_max);
 }
 
+std::tuple<double, double, double> find_maximums(set_of_double_triples const& points) {
+    auto points_iterator = points->begin();
+    double x_max = -INFINITY; double y_max = -INFINITY; double z_max = -INFINITY;
+
+    for (; points_iterator != points->end(); ++points_iterator) {
+        auto coordinate_triple = *points_iterator;
+
+        x_max = max_helper(std::get<0>(coordinate_triple), x_max);
+        y_max = max_helper(std::get<1>(coordinate_triple), y_max);
+        z_max = max_helper(std::get<2>(coordinate_triple), z_max);
+    }
+
+    return std::make_tuple(x_max, y_max, z_max);
+}
+
 double max_helper(double const& coord_component, double const& component_max) {
     if (coord_component > component_max) {
         return coord_component;
@@ -163,12 +157,64 @@ double max_helper(double const& coord_component, double const& component_max) {
     return component_max;
 }
 
-corners_matrix create_enclosure(corners_matrix const& points, double const& distance) {
-    // NOTE: the components of these triples are not related
-    // they do not constitute a real coordinate within the data set
-    auto min_components = find_minimums(points);
-    auto max_components = find_maximums(points);
+/**
+ * \brief Create an enclosure around a set of points
+ *
+ * \details This method expects only 8 coordinates, thus a corners_matrix in our view.
+ * Use the overloaded method for a list of arbitrary triples
+ *
+ * @param corners
+ * @param distance
+ * @return
+ */
+corners_matrix create_enclosure(corners_matrix const& corners, std::tuple<double, double, double> const& min_components, std::tuple<double, double, double> const& max_components, double const& distance) {
+    auto new_enclosure_corners = std::make_shared<std::array<std::tuple<double, double, double>, 8>>();
 
-    auto new_enclosure_corners = std::make_shared<std::array<std::tuple<double, double, double>, 8>>(); 
-    
+    // unfortunately, the order of the corners is not intuitive
+    new_enclosure_corners->at(0) = std::make_tuple(std::get<0>(min_components) + distance, std::get<1>(min_components) + distance, std::get<2>(min_components) + distance);
+    new_enclosure_corners->at(1) = std::make_tuple(std::get<0>(max_components) + distance, std::get<1>(min_components) + distance, std::get<2>(min_components) + distance);
+    new_enclosure_corners->at(2) = std::make_tuple(std::get<0>(min_components) + distance, std::get<1>(max_components) + distance, std::get<2>(min_components) + distance);
+    new_enclosure_corners->at(3) = std::make_tuple(std::get<0>(max_components) + distance, std::get<1>(max_components) + distance, std::get<0>(min_components) + distance);
+    new_enclosure_corners->at(4) = std::make_tuple(std::get<0>(min_components) + distance, std::get<1>(min_components) + distance, std::get<2>(min_components) + distance);
+    new_enclosure_corners->at(5) = std::make_tuple(std::get<0>(max_components) + distance, std::get<1>(min_components) + distance, std::get<2>(max_components) + distance);
+    new_enclosure_corners->at(6) = std::make_tuple(std::get<0>(min_components) + distance, std::get<1>(max_components) + distance, std::get<2>(max_components) + distance);
+    new_enclosure_corners->at(7) = std::make_tuple(std::get<0>(max_components) + distance, std::get<1>(max_components) + distance, std::get<2>(max_components) + distance);
+
+    return new_enclosure_corners;
+}
+
+corners_matrix get_coordinate_bars(corners_matrix const& corners, std::tuple<double, double, double> const& minimum_components) {
+    auto x_min = std::get<0>(minimum_components);
+    auto y_min = std::get<1>(minimum_components);
+    auto z_min = std::get<2>(minimum_components);
+    auto corners_bar = std::make_shared<std::array<std::tuple<double, double, double>, 8>>();
+
+    auto corners_it = corners->begin();
+    auto corners_bar_it = corners_bar->begin();
+    for(; corners_it != corners->end(); ++corners_it, ++corners_bar_it) {
+        auto corners_triple = *corners_it;
+        auto x_bar = std::get<0>(corners_triple) - x_min;
+        auto y_bar = std::get<1>(corners_triple) - y_min;
+        auto z_bar = std::get<2>(corners_triple) - z_min;
+        *corners_bar_it = std::make_tuple(x_bar, y_bar, z_bar);
+    }
+
+    return corners_bar;
+}
+
+corners_matrix get_coordinate_tilde(corners_matrix const& corners_bar, std::tuple<double, double, double> const& component_deltas) {
+    auto x_delta = std::get<0>(component_deltas);
+    auto y_delta = std::get<1>(component_deltas);
+    auto z_delta = std::get<2>(component_deltas);
+
+    auto corners_bar_it = corners_bar->begin();
+    auto corners_tilde = std::make_shared<std::array<std::tuple<double, double, double>, 8>>();
+    auto corners_tilde_it = corners_tilde->begin();
+    for (; corners_bar_it != corners_bar->end(); ++corners_bar_it, ++corners_tilde_it) {
+        auto coordinate_bar = *corners_bar_it;
+
+        *corners_tilde_it = std::make_tuple(std::get<0>(coordinate_bar)/x_delta, std::get<1>(coordinate_bar)/y_delta, std::get<2>(coordinate_bar)/z_delta);
+    }
+
+    return corners_tilde;
 }

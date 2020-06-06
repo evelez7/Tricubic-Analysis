@@ -25,3 +25,14 @@ double shift(double const& original_component, double new_min) {
 
     return (a + ((b-a) * original_component));
 }
+
+double shift(double const& original_component, double const& new_min, double const& new_max) {
+    auto a = new_min;
+    auto b = new_max;
+
+    return (a + ((b-a) * original_component));
+}
+
+std::tuple<double, double, double> get_component_deltas(std::tuple<double, double, double> const& minimums, std::tuple<double, double, double> const& maximums) {
+    return std::make_tuple(std::get<0>(maximums) - std::get<0>(minimums), std::get<1>(maximums) - std::get<1>(minimums), std::get<2>(maximums) - std::get<2>(minimums));
+}

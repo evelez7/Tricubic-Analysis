@@ -3,6 +3,7 @@
 #include "check.h"
 #include "util/points_util.h"
 #include "util/corner_util.h"
+#include "util/general_util.h"
 #include <iostream>
 #include <string.h>
 #include <getopt.h>
@@ -14,22 +15,40 @@
 void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> &, int const&);
 
 void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> &);
+
+/**
+ * \brief Run tests related to interpolating in a non-convenient area
+ *
+ * \details Two types of enclosure tests exist: distanced and in-place
+ * Mode 0 runs both tests, mode 1 runs distanced and mode 2 runs in place
+ *
+ * \param verbose an optional argument to enable additional output
+ * \param mode decides which mode to run the tests, defaults to 0 (both)
+ */
+void run_enclosure_tests(bool const& verbose = false, int const& mode = 0, double const& distance = 0.00000000000001);
+
 // END forward declarations
 
 /**
  * @brief Determines whether the full test suite is executed
  */ 
 int main(int argc, char** argv) {
-    std::cout << "Generating " << get_num_of_test_points() << " test points" << std::endl;
-    auto test_points = generate_test_points();
 
+    // TODO: implement using getopt for flags`
+    // TODO: Create emthod for the points testing
     if (argc < 2) {
+        std::cout << "Generating " << get_num_of_test_points() << " test points" << std::endl;
+        auto test_points = generate_test_points();
         run_tests(test_points);
-    } else if (std::strncmp(argv[1], "test", 4) == 0) {
-        auto random_corners = randomize_corners();
 
-        auto reset = reset_corners(random_corners);
+    } else if (strncmp(argv[1], "enclosures", 10) == 0) {
+        // TODO: get verbose flag from commandline options
+        bool temp_verbose = true;
+        run_enclosure_tests(temp_verbose);
+
     } else {
+        std::cout << "Generating " << get_num_of_test_points() << " test points" << std::endl;
+        auto test_points = generate_test_points();
         auto id = atoi(argv[1]);
 
         run_tests(test_points, id);
@@ -55,5 +74,69 @@ void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> & t
  */
 void run_tests(std::shared_ptr<std::set<std::tuple<double, double, double>>> & test_points) {
     execute_tests(test_points);
+}
+
+std::shared_ptr<std::vector<double>> enclosure_math(corners_matrix & enclosure, corners_matrix const& random_corners, std::tuple<double, double, double> const& interval_minimums, std::tuple<double, double, double> const& interval_maximums) {
+
+    auto enclosure_minimums = find_minimums(enclosure);
+    auto enclosure_bar = get_coordinate_bars(enclosure, enclosure_minimums);
+
+    auto enclosure_maximums = find_maximums(enclosure);
+    auto component_deltas = get_component_deltas(enclosure_maximums, enclosure_minimums);
+    auto enclosure_tilde = get_coordinate_tilde(enclosure_bar, component_deltas);
+
+    // FIX: this might not work since it is possible the different components will exist within different intervals
+    auto random_points = generate_test_points(std::get<0>(interval_minimums),
+            std::get<0>(interval_maximums),
+            std::get<1>(interval_minimums),
+            std::get<1>(interval_maximums),
+            std::get<2>(interval_minimums),
+            std::get<2>(interval_maximums));
+    return execute_tests(random_points, enclosure);
+}
+
+void error_difference(std::shared_ptr<std::vector<double>> const& inplace_errors, std::shared_ptr<std::vector<double>> const& distance_errors) {
+    auto inplace_iterator = inplace_errors->begin();
+    auto distance_iterator = distance_errors->begin();
+    for (; inplace_iterator != inplace_errors->end(); ++inplace_iterator, ++distance_iterator) {
+        std::cout << "Error difference: " << *inplace_iterator - *distance_iterator << std::endl;
+    }
+}
+
+void run_enclosure_tests(bool const& verbose, int const& mode, double const& distance) {
+    std::cout << "Beginning tests of enclosures" << std::endl;
+
+    auto random_corners = randomize_corners();
+
+    auto original_maximums = find_maximums(random_corners);
+    auto original_minimums = find_minimums(random_corners);
+    corners_matrix enclosure;
+
+    switch(mode) {
+        case 0: {
+            std::cout << "Testing distanced enclosures at " << distance << " length" << std::endl << std::endl;
+            enclosure = create_enclosure(random_corners, original_minimums, original_maximums, distance);
+            auto distance_errors = enclosure_math(enclosure, random_corners, original_minimums, original_maximums);
+
+            std::cout << "***************************************" << std::endl << std::endl;
+
+            std::cout << "Testing inplace enclosure" << std::endl << std::endl;
+            enclosure = create_enclosure(random_corners, original_minimums, original_maximums);
+            auto inplace_errors = enclosure_math(enclosure, random_corners, original_minimums, original_maximums);
+            error_difference(inplace_errors, distance_errors);
+            return;
+        }
+        case 1:
+            std::cout << "Testing distanced enclosures at " << distance << " length" << std::endl << std::endl;
+            enclosure = create_enclosure(random_corners, original_minimums, original_maximums, distance);
+            break;
+        case 2:
+            std:: cout << "Testing inplace enclosure" << std::endl << std::endl;
+            enclosure = create_enclosure(random_corners, original_minimums, original_maximums);
+            break;
+        default:
+            throw "something went wrong";
+    }
+    enclosure_math(enclosure, random_corners, original_minimums, original_maximums);
 }
 

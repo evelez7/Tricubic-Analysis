@@ -31,7 +31,10 @@ typedef std::shared_ptr<std::list<double>>(*interpolator)(std::shared_ptr<std::s
 typedef double(*control)(double, double, double);
 
 double shift(double const&, double);
+double shift(double const&, double const&, double const&);
 
 double norm(std::shared_ptr<std::list<double>> const&);
+
+std::tuple<double, double, double> get_component_deltas(std::tuple<double, double, double> const&, std::tuple<double, double, double> const&);
 
 #endif //TRIC_ANALYSIS_UTIL_H
